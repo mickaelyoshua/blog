@@ -1,0 +1,30 @@
+# Rust
+/target
+**/*.rs.bk
+*.pdb
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+
+# SQLx offline query cache (regenerate with `cargo sqlx prepare`)
+# Uncomment if you want to commit offline query data:
+# !.sqlx/
+
+# Build artifacts
+*.log
