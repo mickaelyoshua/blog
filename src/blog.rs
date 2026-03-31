@@ -6,8 +6,7 @@ use crate::error::AppError;
 pub struct Post {
     pub slug: String,
     pub title: String,
-    pub created_at: NaiveDate,
-    pub updated_at: Option<NaiveDate>,
+    pub date: NaiveDate,
     pub summary: String,
     pub content_html: String,
 }
@@ -15,8 +14,7 @@ pub struct Post {
 #[derive(Deserialize)]
 struct Frontmatter {
     title: String,
-    created_at: NaiveDate,
-    updated_at: Option<NaiveDate>,
+    date: NaiveDate,
     summary: String,
 }
 
@@ -37,8 +35,7 @@ pub fn parse_post(slug: &str, raw_markdown: &str) -> Result<Post, AppError> {
     Ok(Post {
         slug: slug.to_string(),
         title: fm.title,
-        created_at: fm.created_at,
-        updated_at: fm.updated_at,
+        date: fm.date,
         summary: fm.summary,
         content_html: html,
     })
@@ -63,6 +60,6 @@ pub fn load_all_posts(content_dir: &str) -> Result<Vec<Post>, AppError> {
         }
     }
 
-    posts.sort_by(|a, b| b.created_at.cmp(&a.created_at));
+    posts.sort_by(|a, b| b.date.cmp(&a.date));
     Ok(posts)
 }

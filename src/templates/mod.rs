@@ -47,3 +47,33 @@ pub struct BlogPostTemplate {
 pub struct BlogPostFragmentTemplate {
     pub post: Post,
 }
+
+pub mod filters {
+    use chrono::{Datelike, NaiveDate};
+
+    const MONTH_PT: [&str; 12] = [
+        "janeiro",
+        "fevereiro",
+        "março",
+        "abril",
+        "maio",
+        "junho",
+        "julho",
+        "agosto",
+        "setembro",
+        "outubro",
+        "novembro",
+        "dezembro",
+    ];
+
+    #[askama::filter_fn]
+    pub fn format_date_br(date: &NaiveDate, _env: &dyn askama::Values) -> askama::Result<String> {
+        let month_name = MONTH_PT[date.month() as usize - 1];
+        Ok(format!(
+            "{} de {} de {}",
+            date.day(),
+            month_name,
+            date.year()
+        ))
+    }
+}

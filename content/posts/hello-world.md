@@ -1,6 +1,6 @@
 ---
 title: "Olá, mundo!"
-created_at: 2026-03-31
+date: 2026-03-31
 summary: "Primeiro post do blog — por que decidi construir meu próprio site do zero com Rust, HTMX e zero JavaScript."
 ---
 

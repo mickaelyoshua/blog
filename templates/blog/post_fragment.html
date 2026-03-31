@@ -1,6 +1,6 @@
 <article class="prose">
   <header>
-    <span class="post-meta">{{ post.created_at }}</span>
+    <span class="post-meta">{{ post.date|format_date_br }}</span>
     <h1>{{ post.title }}</h1>
   </header>
   {{ post.content_html|safe }}

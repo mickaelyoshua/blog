@@ -6,7 +6,7 @@
   <ul class="post-list">
     {% for post in posts %}
     <li class="post-item">
-      <span class="post-meta">{{ post.created_at }}</span>
+      <span class="post-meta">{{ post.date|format_date_br }}</span>
       <h2 class="post-title">
         <a href="/blog/{{ post.slug }}">{{ post.title }}</a>
       </h2>
