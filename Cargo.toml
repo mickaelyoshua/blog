@@ -6,7 +6,7 @@ edition = "2024"
 [dependencies]
 axum = { version = "0.8.8" }
 axum-htmx = { version = "0.8.1" }
-askama = {version = "0.15.6" }
+askama = { version = "0.15.6" }
 tokio = { version = "1.50.0", features = ["full"] }
 tower-http = { version = "0.6.8", features = ["fs", "compression-gzip"] }
 pulldown-cmark = { version = "0.13.3" }
@@ -14,4 +14,4 @@ serde = { version = "1.0.228", features = ["derive"] }
 serde_yml = { version = "0.0.12" }
 tracing = { version = "0.1.44" }
 tracing-subscriber = { version = "0.3.23" }
-chrono = { version = "0.4.44" }
+chrono = { version = "0.4.44", features = ["serde"] }

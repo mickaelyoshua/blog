@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Yoshua{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/style.css" />
+    <script src="/static/vendor/htmx.min.js" defer></script>
+  </head>
+  <body hx-boost="true">
+    <a href="#content" class="skip-link" hx-boost="false"
+      >Pular para o conteúdo</a
+    >
+
+    <header class="site-header">
+      <div class="container">
+        <a href="/" class="logo">Yoshua</a>
+        <nav class="site-nav" aria-label="Navegação principal">
+          <a href="/" hx-get="/" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Início</a>
+          <a href="/blog" hx-get="/blog" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Blog</a>
+          <a href="/cv" hx-get="/cv" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Currículo</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="content" class="container">
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>&copy; 2026 Yoshua. Todos os direitos reservados.</p>
+      </div>
+    </footer>
+  </body>
+</html>

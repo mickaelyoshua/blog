@@ -1,4 +1,6 @@
-use axum::{Router, extract::Path, routing::get};
+use axum::{Router, routing::get};
+use blog::routes::{blog_list, blog_post, home, resume};
+use tower_http::services::ServeDir;
 use tracing::{error, info};
 
 const PORT: &str = "3000";
@@ -9,9 +11,10 @@ async fn main() {
 
     let router = Router::new()
         .route("/", get(home))
-        .route("/blog", get(blog))
+        .route("/blog", get(blog_list))
         .route("/blog/{slug}", get(blog_post))
-        .route("/cv", get(cv));
+        .route("/cv", get(resume))
+        .nest_service("/static", ServeDir::new("static"));
 
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{PORT}"))
         .await
@@ -23,17 +26,4 @@ async fn main() {
     info!("Server listening at http://localhost:{PORT}");
 
     axum::serve(listener, router).await.unwrap()
-}
-
-async fn home() -> &'static str {
-    "home"
-}
-async fn blog() -> &'static str {
-    "home"
-}
-async fn blog_post(Path(slug): Path<String>) -> String {
-    format!("post: {slug}")
-}
-async fn cv() -> &'static str {
-    "home"
 }

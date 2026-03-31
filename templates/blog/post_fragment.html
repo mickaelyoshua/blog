@@ -1,0 +1,7 @@
+<article class="prose">
+  <header>
+    <span class="post-meta">{{ post.created_at }}</span>
+    <h1>{{ post.title }}</h1>
+  </header>
+  {{ post.content_html|safe }}
+</article>

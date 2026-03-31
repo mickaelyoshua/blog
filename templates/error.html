@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Erro {{ status }} — Yoshua{% endblock %}
+
+{% block content %}
+<section class="error-page">
+  <p class="error-code">{{ status }}</p>
+  <div class="error-divider"></div>
+  <h1>{{ message }}</h1>
+  <p class="text-secondary">
+    {% if status == 404 %}
+      O endereço que você tentou acessar não existe ou foi removido.
+    {% elif status == 500 %}
+      Algo deu errado do nosso lado. Tente novamente mais tarde.
+    {% else %}
+      Ocorreu um erro inesperado.
+    {% endif %}
+  </p>
+  <a href="/" hx-get="/" hx-target="#content" hx-swap="innerHTML" hx-push-url="true" class="btn">Voltar ao início</a>
+</section>
+{% endblock %}
