@@ -4,8 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{% block title %}Yoshua{% endblock %}</title>
-    <link rel="stylesheet" href="/static/css/style.css" />
-    <script src="/static/vendor/htmx.min.js" defer></script>
+    <link rel="stylesheet" href="/static/css/style.css?v={{ static_hash }}" />
+    <script src="/static/vendor/htmx.min.js?v={{ static_hash }}" defer></script>
   </head>
   <body hx-boost="true">
     <a href="#content" class="skip-link" hx-boost="false"

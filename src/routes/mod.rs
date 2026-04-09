@@ -10,7 +10,7 @@ use crate::{
     error::AppError,
     templates::{
         BlogListFragmentTemplate, BlogListTemplate, BlogPostFragmentTemplate, BlogPostTemplate,
-        HomeFragmentTemplate, HomeTemplate, ResumeFragmentTemplate, ResumeTemplate,
+        HomeFragmentTemplate, HomeTemplate, ResumeFragmentTemplate, ResumeTemplate, STATIC_HASH,
     },
 };
 
@@ -22,7 +22,7 @@ pub async fn home(
         let html = HomeFragmentTemplate.render()?;
         Ok(Html(html))
     } else {
-        let html = HomeTemplate { active_nav: "/" }.render()?;
+        let html = HomeTemplate { active_nav: "/", static_hash: STATIC_HASH }.render()?;
         Ok(Html(html))
     }
 }
@@ -35,7 +35,7 @@ pub async fn resume(
         let html = ResumeFragmentTemplate.render()?;
         Ok(Html(html))
     } else {
-        let html = ResumeTemplate { active_nav: "/cv" }.render()?;
+        let html = ResumeTemplate { active_nav: "/cv", static_hash: STATIC_HASH }.render()?;
         Ok(Html(html))
     }
 }
@@ -52,6 +52,7 @@ pub async fn blog_list(
         let html = BlogListTemplate {
             posts,
             active_nav: "/blog",
+            static_hash: STATIC_HASH,
         }
         .render()?;
         Ok(Html(html))
@@ -74,6 +75,7 @@ pub async fn blog_post(
         let html = BlogPostTemplate {
             post,
             active_nav: "/blog",
+            static_hash: STATIC_HASH,
         }
         .render()?;
         Ok(Html(html))

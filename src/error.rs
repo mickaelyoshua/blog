@@ -5,7 +5,7 @@ use axum::{
 };
 use tracing::{error, warn};
 
-use crate::templates::ErrorTemplate;
+use crate::templates::{ErrorTemplate, STATIC_HASH};
 
 pub enum AppError {
     NotFound,
@@ -32,6 +32,7 @@ impl IntoResponse for AppError {
             status: status.as_u16(),
             message: message.to_string(),
             active_nav: "",
+            static_hash: STATIC_HASH,
         }
         .render()
         .unwrap_or_else(|_| format!("<h1>{}</h1><p>{message}</p>", status.as_u16()));

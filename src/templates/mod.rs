@@ -1,10 +1,13 @@
 use crate::blog::Post;
 use askama::Template;
 
+pub const STATIC_HASH: &str = env!("STATIC_HASH");
+
 #[derive(Template)]
 #[template(path = "home.html")]
 pub struct HomeTemplate {
     pub active_nav: &'static str,
+    pub static_hash: &'static str,
 }
 
 #[derive(Template)]
@@ -15,6 +18,7 @@ pub struct HomeFragmentTemplate;
 #[template(path = "resume.html")]
 pub struct ResumeTemplate {
     pub active_nav: &'static str,
+    pub static_hash: &'static str,
 }
 
 #[derive(Template)]
@@ -27,6 +31,7 @@ pub struct ErrorTemplate {
     pub status: u16,
     pub message: String,
     pub active_nav: &'static str,
+    pub static_hash: &'static str,
 }
 
 #[derive(Template)]
@@ -34,6 +39,7 @@ pub struct ErrorTemplate {
 pub struct BlogListTemplate {
     pub posts: Vec<Post>,
     pub active_nav: &'static str,
+    pub static_hash: &'static str,
 }
 
 #[derive(Template)]
@@ -47,6 +53,7 @@ pub struct BlogListFragmentTemplate {
 pub struct BlogPostTemplate {
     pub post: Post,
     pub active_nav: &'static str,
+    pub static_hash: &'static str,
 }
 
 #[derive(Template)]
