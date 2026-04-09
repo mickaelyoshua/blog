@@ -21,13 +21,17 @@ impl IntoResponse for AppError {
             }
             AppError::Internal(e) => {
                 error!(error = %e, "Internal Error");
-                (StatusCode::INTERNAL_SERVER_ERROR, "Erro interno do servidor")
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "Erro interno do servidor",
+                )
             }
         };
 
         let html = ErrorTemplate {
             status: status.as_u16(),
             message: message.to_string(),
+            active_nav: "",
         }
         .render()
         .unwrap_or_else(|_| format!("<h1>{}</h1><p>{message}</p>", status.as_u16()));

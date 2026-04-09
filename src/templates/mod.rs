@@ -3,7 +3,9 @@ use askama::Template;
 
 #[derive(Template)]
 #[template(path = "home.html")]
-pub struct HomeTemplate;
+pub struct HomeTemplate {
+    pub active_nav: &'static str,
+}
 
 #[derive(Template)]
 #[template(path = "home_fragment.html")]
@@ -11,7 +13,9 @@ pub struct HomeFragmentTemplate;
 
 #[derive(Template)]
 #[template(path = "resume.html")]
-pub struct ResumeTemplate;
+pub struct ResumeTemplate {
+    pub active_nav: &'static str,
+}
 
 #[derive(Template)]
 #[template(path = "resume_fragment.html")]
@@ -22,12 +26,14 @@ pub struct ResumeFragmentTemplate;
 pub struct ErrorTemplate {
     pub status: u16,
     pub message: String,
+    pub active_nav: &'static str,
 }
 
 #[derive(Template)]
 #[template(path = "blog/list.html")]
 pub struct BlogListTemplate {
     pub posts: Vec<Post>,
+    pub active_nav: &'static str,
 }
 
 #[derive(Template)]
@@ -40,6 +46,7 @@ pub struct BlogListFragmentTemplate {
 #[template(path = "blog/post.html")]
 pub struct BlogPostTemplate {
     pub post: Post,
+    pub active_nav: &'static str,
 }
 
 #[derive(Template)]

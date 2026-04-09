@@ -126,19 +126,28 @@ GET  /blog/:slug        # Individual post
 GET  /cv                # Resume page
 ```
 
-## Color Scheme (Dark Theme)
+## Color Scheme (Dark Theme — Carbonfox)
 
 | Role             | Hex       |
 |------------------|-----------|
-| Background       | `#0b0b14` |
-| Surface          | `#151525` |
-| Border           | `#2a2a3e` |
-| Text primary     | `#e4e4ef` |
-| Text secondary   | `#8888a4` |
-| Cyan (primary)   | `#22d3ee` |
-| Cyan hover       | `#67e8f9` |
-| Purple (accent)  | `#a78bfa` |
-| Purple hover     | `#c4b5fd` |
-| Gradient         | `#22d3ee → #a78bfa` |
-| Success (teal)   | `#2dd4bf` |
-| Error (rose)     | `#f472b6` |
+| Background       | `#161616` |
+| Surface          | `#252525` |
+| Border           | `#3d3d3d` |
+| Text primary     | `#f2f4f8` |
+| Text secondary   | `#909dab` |
+| Blue (primary)   | `#78a9ff` |
+| Blue hover       | `#a6c8ff` |
+| Violet (accent)  | `#be95ff` |
+| Violet hover     | `#d4baff` |
+| Gradient         | `#78a9ff → #be95ff` |
+| Green            | `#25be6a` |
+| Pink             | `#ee5396` |
+| Teal             | `#3ddbd9` |
+| Merlot (error)   | `#bf4a60` |
+
+## Typography
+
+- **Body:** IBM Plex Sans (400, 500, 600, 700) — self-hosted in `static/fonts/`
+- **Code:** IBM Plex Mono (400, 500) — self-hosted in `static/fonts/`
+- **Base size:** 18px (desktop), 17px (tablet), 16px (phone)
+- **Syntax highlighting:** syntect with CSS classes (prefix `sy-`), Carbonfox color mapping

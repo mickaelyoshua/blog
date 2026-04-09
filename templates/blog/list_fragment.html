@@ -1,16 +1,16 @@
 <section>
-  <h1>Blog</h1>
+  <h1 class="gradient-text">Blog</h1>
   {% if posts.is_empty() %}
   <p class="text-secondary">Nenhum post publicado ainda.</p>
   {% else %}
   <ul class="post-list">
     {% for post in posts %}
-    <li class="post-item">
-      <span class="post-meta">{{ post.date|format_date_br }}</span>
-      <h2 class="post-title">
-        <a href="/blog/{{ post.slug }}">{{ post.title }}</a>
-      </h2>
-      <p class="post-summary">{{ post.summary }}</p>
+    <li class="post-card">
+      <a href="/blog/{{ post.slug }}" class="post-card-link">
+        <span class="post-meta">{{ post.date|format_date_br }}</span>
+        <h2 class="post-title">{{ post.title }}</h2>
+        <p class="post-summary">{{ post.summary }}</p>
+      </a>
     </li>
     {% endfor %}
   </ul>

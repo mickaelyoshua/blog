@@ -22,7 +22,7 @@ pub async fn home(
         let html = HomeFragmentTemplate.render()?;
         Ok(Html(html))
     } else {
-        let html = HomeTemplate.render()?;
+        let html = HomeTemplate { active_nav: "/" }.render()?;
         Ok(Html(html))
     }
 }
@@ -35,7 +35,7 @@ pub async fn resume(
         let html = ResumeFragmentTemplate.render()?;
         Ok(Html(html))
     } else {
-        let html = ResumeTemplate.render()?;
+        let html = ResumeTemplate { active_nav: "/cv" }.render()?;
         Ok(Html(html))
     }
 }
@@ -49,7 +49,11 @@ pub async fn blog_list(
         let html = BlogListFragmentTemplate { posts }.render()?;
         Ok(Html(html))
     } else {
-        let html = BlogListTemplate { posts }.render()?;
+        let html = BlogListTemplate {
+            posts,
+            active_nav: "/blog",
+        }
+        .render()?;
         Ok(Html(html))
     }
 }
@@ -67,7 +71,11 @@ pub async fn blog_post(
         let html = BlogPostFragmentTemplate { post }.render()?;
         Ok(Html(html))
     } else {
-        let html = BlogPostTemplate { post }.render()?;
+        let html = BlogPostTemplate {
+            post,
+            active_nav: "/blog",
+        }
+        .render()?;
         Ok(Html(html))
     }
 }
