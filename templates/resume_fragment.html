@@ -13,9 +13,10 @@
   </header>
 
   <p class="resume-summary">
-    Desenvolvedor com experiência em engenharia de dados, APIs back-end e aplicações full-stack.
-    Proficiente em Python, Rust, SQL e Go. Experiência com pipelines ETL, modelagem de banco de dados,
-    dashboards de BI e serviços RESTful/WebSocket.
+    Desenvolvedor com experiência em engenharia de dados, APIs back-end e
+    aplicações full-stack. Proficiente em Python, Rust, SQL e Go. Experiência
+    com pipelines ETL, modelagem de banco de dados, dashboards de BI e serviços
+    RESTful/WebSocket.
   </p>
 
   <h2>Habilidades</h2>
@@ -33,13 +34,16 @@
   <div class="skill-group">
     <h3>Back-end</h3>
     <div class="skill-pills">
+      <span class="pill">Axum</span>
+      <span class="pill">Askama</span>
+      <span class="pill">SQLx</span>
+      <span class="pill">Tokio</span>
+      <span class="pill">Ratatui</span>
       <span class="pill">FastAPI</span>
-      <span class="pill">Rocket</span>
-      <span class="pill">Diesel</span>
       <span class="pill">SQLAlchemy</span>
-      <span class="pill">Gin</span>
       <span class="pill">APIs RESTful</span>
       <span class="pill">WebSockets</span>
+      <span class="pill">Hypermedia (HDA)</span>
     </div>
   </div>
 
@@ -59,7 +63,6 @@
     <h3>Front-end</h3>
     <div class="skill-pills">
       <span class="pill">HTMX</span>
-      <span class="pill">Flutter</span>
     </div>
   </div>
 
@@ -84,46 +87,89 @@
 
   <h2>Experiência Profissional</h2>
 
-  <h3>Estagiário em Análise de Dados <span class="text-secondary">— Tribunal de Contas da Paraíba</span></h3>
+  <h3>
+    Estagiário em Análise de Dados
+    <span class="text-secondary">— Tribunal de Contas da Paraíba</span>
+  </h3>
   <p class="post-meta">Junho de 2022 — Junho de 2024 • João Pessoa — PB</p>
   <ul>
     <li>Modelagem e gerenciamento de banco de dados relacional (SQL Server)</li>
-    <li>Pipelines ETL para dados públicos de saúde (DATASUS) processando milhões de registros</li>
+    <li>
+      Pipelines ETL para dados públicos de saúde (DATASUS) processando milhões
+      de registros
+    </li>
     <li>Dashboards QlikView para auditoria e relatórios executivos</li>
     <li>Desenvolvimento de APIs back-end com Python (FastAPI) e WebSockets</li>
-    <li>Automação de web scraping e scripts SQL/Python para análise e auditoria</li>
+    <li>
+      Automação de web scraping e scripts SQL/Python para análise e auditoria
+    </li>
   </ul>
 
   <h2>Projetos Pessoais</h2>
 
   <div class="project-card">
-    <h3><a href="https://github.com/mickaelyoshua/livro-e-cia">Livro &amp; Cia</a></h3>
-    <p>Sistema interno de gestão de livraria com controle de estoque, processamento de vendas e analytics. Autenticação JWT com rotação de tokens, controle de acesso por perfil e sincronização de estoque via triggers. Rust (Axum, SQLx, Askama), PostgreSQL, HTMX.</p>
+    <h3>
+      <a href="https://github.com/mickaelyoshua/blog">Blog &amp; Currículo</a>
+    </h3>
+    <p>
+      Blog e currículo pessoal com arquitetura hypermedia (HDA/HATEOAS): o
+      servidor é fonte única de estado, sem APIs JSON para o front-end. Posts em
+      Markdown com syntax highlighting via syntect, export de currículo em PDF e
+      tema dark Carbonfox. Rust (Axum, Askama), HTMX.
+    </p>
   </div>
 
   <div class="project-card">
-    <h3><a href="https://github.com/mickaelyoshua/finances">Finances</a></h3>
-    <p>Gerenciador de finanças pessoais via terminal com rastreamento multi-conta, ciclos de faturamento de cartão de crédito, controle de parcelas, orçamentos e lembretes de despesas recorrentes. Rust (Ratatui, SQLx, Tokio), PostgreSQL.</p>
+    <h3>
+      <a href="https://github.com/mickaelyoshua/finances-tui">Finances TUI</a>
+    </h3>
+    <p>
+      Gerenciador de finanças pessoais via terminal com rastreamento
+      multi-conta, ciclos de faturamento de cartão de crédito, controle de
+      parcelas, orçamentos e lembretes de despesas recorrentes. Rust (Ratatui,
+      SQLx, Tokio), PostgreSQL.
+    </p>
   </div>
 
   <div class="project-card">
-    <h3><a href="https://github.com/mickaelyoshua7674/etl-cnpjs">ETL de Dados Públicos</a></h3>
-    <p>Pipeline ETL para milhões de registros de CNPJs com I/O assíncrono e multiprocessing. Python, PostgreSQL, Docker.</p>
+    <h3>
+      <a href="https://github.com/mickaelyoshua/monitor-consumo-energia"
+        >Monitor de Consumo Energético</a
+      >
+    </h3>
+    <p>
+      Aplicação web para monitoramento de consumo energético doméstico. Cadastro
+      de eletrodomésticos, cálculo automático de kWh e custo em R$, ranking de
+      consumo e recomendações personalizadas de economia. Rust (Axum, Askama),
+      HTMX, SQLite.
+    </p>
   </div>
 
   <div class="project-card">
-    <h3><a href="https://github.com/mickaelyoshua/fadex">Fadex</a></h3>
-    <p>Gerador de mensagens para contratação de professores. Lê dados de candidatos do Google Sheets, extrai telefones de currículos em PDF e gera mensagens de contato via WhatsApp. Python, Google APIs.</p>
+    <h3>Fadex</h3>
+    <p>
+      Gerador de mensagens para contratação de professores. Lê dados de
+      candidatos do Google Sheets, extrai telefones de currículos em PDF e gera
+      mensagens de contato via WhatsApp. Python, Google APIs.
+    </p>
   </div>
 
   <h2>Educação</h2>
   <ul>
-    <li><strong>Bacharelado em Ciência da Computação</strong> — UNIPE • 2024 — Presente</li>
-    <li><strong>Engenharia Elétrica (incompleto)</strong> — IFPB • 2018 — 2024</li>
+    <li>
+      <strong>Bacharelado em Ciência da Computação</strong> — UNIPE • 2024 —
+      Presente
+    </li>
+    <li>
+      <strong>Engenharia Elétrica (incompleto)</strong> — IFPB • 2018 — 2024
+    </li>
     <li><strong>Técnico em Mecânica</strong> — IFPB • 2014 — 2017</li>
   </ul>
   <p class="resume-note">
-    <strong>Aprendizado Contínuo:</strong> Estruturas de Dados &amp; Algoritmos, AWS, Rust (Rocket, Tokio) •
-    <a href="https://www.linkedin.com/in/mickaelyoshua/details/certifications/">Ver Certificados</a>
+    <strong>Aprendizado Contínuo:</strong> Estruturas de Dados &amp; Algoritmos,
+    AWS, Arquiteturas Hypermedia (HDA) •
+    <a href="https://www.linkedin.com/in/mickaelyoshua/details/certifications/"
+      >Ver Certificados</a
+    >
   </p>
 </section>
