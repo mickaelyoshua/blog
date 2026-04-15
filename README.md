@@ -56,6 +56,15 @@ Conteúdo do post em **markdown**.
 
 The filename (without `.md`) becomes the URL slug: `content/posts/meu-primeiro-post.md` → `/blog/meu-primeiro-post`.
 
+### Export resume as PDF
+
+```sh
+make resume                  # writes ./resume.pdf via headless Chromium
+BROWSER=/usr/bin/google-chrome-stable make resume   # override browser
+```
+
+Requires a pure Chromium-based browser (`chromium`, `google-chrome-stable`, or `brave-browser`). On Arch: `sudo pacman -S chromium`. Vivaldi is **not** supported — its headless mode hangs on background sync services and writes empty PDFs. The Makefile boots the server, waits for `/cv` to respond, then prints the page using the `@media print` stylesheet.
+
 ## Deployment
 
 The app compiles to a single static binary. Hosting options under consideration:

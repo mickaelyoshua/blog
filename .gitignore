@@ -29,5 +29,8 @@ docker-compose.override.yml
 # Build artifacts
 *.log
 
+# Generated resume export
+resume.pdf
+
 # Plan
 plan.md

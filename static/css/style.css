@@ -732,3 +732,183 @@ pre code {
     border-radius: 0;
   }
 }
+
+/* ===== Print (resume PDF export) ===== */
+@media print {
+  @page {
+    size: A4;
+    margin: 1.4cm 1.6cm;
+  }
+
+  html {
+    font-size: 10.5pt;
+  }
+
+  body {
+    background: #ffffff;
+    color: #1a1a1a;
+    line-height: 1.4;
+    letter-spacing: 0;
+    min-height: 0;
+    display: block;
+  }
+
+  .skip-link,
+  .site-header,
+  .site-footer,
+  nav {
+    display: none !important;
+  }
+
+  main {
+    padding: 0;
+  }
+
+  .container {
+    max-width: none;
+    padding: 0;
+  }
+
+  a {
+    color: #0f4fb0;
+    text-decoration: none;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    color: #1a1a1a;
+    page-break-after: avoid;
+    break-after: avoid-page;
+  }
+
+  h1 {
+    font-size: 1.7rem;
+    margin-bottom: 0.25rem;
+    text-align: left;
+    letter-spacing: -0.01em;
+  }
+
+  h2 {
+    font-size: 1.1rem;
+    margin: 0.9rem 0 0.4rem;
+    padding-bottom: 0.15rem;
+    border-bottom: 1px solid #bbbbbb;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  h3 {
+    font-size: 1rem;
+    margin: 0.5rem 0 0.15rem;
+  }
+
+  p,
+  li {
+    orphans: 3;
+    widows: 3;
+  }
+
+  ul {
+    margin: 0.15rem 0 0.4rem 1.1rem;
+    padding: 0;
+  }
+
+  li {
+    margin: 0.05rem 0;
+  }
+
+  /* Resume */
+  .gradient-text {
+    background: none;
+    -webkit-text-fill-color: #1a1a1a;
+    color: #1a1a1a;
+  }
+
+  .resume-header {
+    text-align: left;
+    margin-bottom: 0.6rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid #bbbbbb;
+  }
+
+  .resume-header h1 {
+    margin-bottom: 0.2rem;
+  }
+
+  .resume-links,
+  .resume-summary,
+  .text-secondary {
+    color: #444444 !important;
+  }
+
+  .resume-summary {
+    margin: 0.5rem 0 0.25rem;
+  }
+
+  .skill-group {
+    margin: 0.35rem 0;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .skill-group h3 {
+    margin-bottom: 0.15rem;
+  }
+
+  .skill-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+
+  .pill {
+    background: transparent;
+    color: #1a1a1a;
+    border: 1px solid #888888;
+    border-radius: 3px;
+    padding: 0.05rem 0.4rem;
+    font-size: 0.82rem;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .project-card {
+    background: transparent;
+    border: none;
+    border-left: 2px solid #cccccc;
+    padding: 0.1rem 0 0.1rem 0.6rem;
+    margin: 0.35rem 0;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .project-card h3 {
+    margin: 0 0 0.1rem 0;
+  }
+
+  .project-card p {
+    margin: 0;
+    color: #333333;
+  }
+
+  .post-meta {
+    color: #555555 !important;
+    font-size: 0.85rem;
+    margin: 0.05rem 0 0.2rem;
+  }
+
+  .resume-note {
+    margin-top: 0.6rem;
+    font-size: 0.9rem;
+    color: #333333;
+  }
+
+  .resume > h2 + h3,
+  .resume > .skill-group,
+  .resume > .project-card {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
