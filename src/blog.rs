@@ -6,6 +6,7 @@ use serde::Deserialize;
 use syntect::html::{ClassStyle, ClassedHTMLGenerator};
 use syntect::parsing::SyntaxSet;
 use syntect::util::LinesWithEndings;
+use tracing::warn;
 
 use crate::error::AppError;
 
@@ -27,16 +28,26 @@ struct Frontmatter {
 }
 
 pub fn parse_post(slug: &str, raw_markdown: &str) -> Result<Post, AppError> {
-    let parts: Vec<&str> = raw_markdown.splitn(3, "---").collect();
-    if parts.len() < 3 {
-        return Err(AppError::Internal(
-            "Wrong format for markdown parsing".to_string(),
-        ));
-    }
+    let bad = |reason: &str| AppError::BadPost {
+        slug: slug.to_string(),
+        reason: reason.to_string(),
+    };
 
-    let fm = serde_yml::from_str::<Frontmatter>(parts[1])?;
+    let after_opening = raw_markdown
+        .strip_prefix("---\n")
+        .ok_or_else(|| bad("missing opening --- fence"))?;
 
-    let parser = pulldown_cmark::Parser::new(parts[2]);
+    let (yml, body) = after_opening
+        .split_once("\n---")
+        .ok_or_else(|| bad("missing closing --- fence"))?;
+
+    let fm = serde_yaml_ng::from_str::<Frontmatter>(yml).map_err(|e| AppError::BadPost {
+        slug: slug.to_string(),
+        reason: format!("yml: {e}"),
+    })?;
+    let body = body.trim_start_matches('\n');
+
+    let parser = pulldown_cmark::Parser::new(body);
     let mut html = String::new();
     let mut code_buffer = String::new();
     let mut current_lang: Option<String> = None;
@@ -108,22 +119,72 @@ fn highlight_code(code: &str, lang: Option<&str>) -> String {
 pub fn load_all_posts(content_dir: &str) -> Result<Vec<Post>, AppError> {
     let mut posts = Vec::new();
 
-    for entry in std::fs::read_dir(content_dir)? {
-        let entry = entry?;
+    let entries = std::fs::read_dir(content_dir)
+        .map_err(|e| AppError::Internal(format!("content dir unreadable: {e}")))?;
+
+    for entry in entries {
+        let entry = match entry {
+            Ok(e) => e,
+            Err(e) => {
+                warn!(error = %e, "skipping unreadable dir entry");
+                continue;
+            }
+        };
+
         let path = entry.path();
 
-        // Filter: only .md files
-        if path.extension().is_some_and(|ext| ext == "md") {
-            let Some(slug) = path.file_stem().and_then(|s| s.to_str()) else {
-                continue;
-            };
+        if path.extension().is_none_or(|ext| ext != "md") {
+            continue;
+        }
 
-            let raw = std::fs::read_to_string(&path)?;
-            let post = parse_post(slug, &raw)?;
-            posts.push(post);
+        match load_one_post(&path) {
+            Ok(post) => posts.push(post),
+            Err(e) => warn!(path = %path.display(), error = ?e, "skipping broken post"),
         }
     }
 
     posts.sort_by(|a, b| b.date.cmp(&a.date));
     Ok(posts)
+}
+
+fn load_one_post(path: &std::path::Path) -> Result<Post, AppError> {
+    let slug = path
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .ok_or_else(|| AppError::Internal(format!("invalid filename: {}", path.display())))?;
+    let raw = std::fs::read_to_string(path)?;
+    parse_post(slug, &raw)
+}
+
+pub struct Slug(String);
+
+impl Slug {
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl TryFrom<String> for Slug {
+    type Error = AppError;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        const MAX_LEN: usize = 64;
+
+        if value.is_empty() || value.len() > MAX_LEN {
+            return Err(AppError::NotFound);
+        }
+
+        let ok = value
+            .bytes()
+            .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-');
+        if !ok {
+            return Err(AppError::NotFound);
+        }
+
+        if value.starts_with('-') || value.ends_with('-') || value.contains("--") {
+            return Err(AppError::NotFound);
+        }
+
+        Ok(Slug(value))
+    }
 }
