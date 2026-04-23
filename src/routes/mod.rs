@@ -1,13 +1,16 @@
+use std::sync::Arc;
+
 use askama::Template;
 use axum::{
-    extract::Path,
+    extract::{Path, State},
     response::{Html, IntoResponse},
 };
 use axum_htmx::{HxBoosted, HxRequest};
 
 use crate::{
-    blog::{Slug, load_all_posts, parse_post},
+    blog::Slug,
     error::AppError,
+    state::AppState,
     templates::{
         BlogListFragmentTemplate, BlogListTemplate, BlogPostFragmentTemplate, BlogPostTemplate,
         HomeFragmentTemplate, HomeTemplate, ResumeFragmentTemplate, ResumeTemplate, STATIC_HASH,
@@ -49,16 +52,20 @@ pub async fn resume(
 }
 
 pub async fn blog_list(
+    State(state): State<AppState>,
     HxRequest(is_htmx): HxRequest,
     HxBoosted(is_boosted): HxBoosted,
 ) -> Result<impl IntoResponse, AppError> {
-    let posts = load_all_posts("content/posts")?;
+    let store = state.posts()?;
     if is_htmx && !is_boosted {
-        let html = BlogListFragmentTemplate { posts }.render()?;
+        let html = BlogListFragmentTemplate {
+            posts: store.all.clone(),
+        }
+        .render()?;
         Ok(Html(html))
     } else {
         let html = BlogListTemplate {
-            posts,
+            posts: store.all.clone(),
             active_nav: "/blog",
             static_hash: STATIC_HASH,
         }
@@ -68,14 +75,14 @@ pub async fn blog_list(
 }
 
 pub async fn blog_post(
+    State(state): State<AppState>,
     HxRequest(is_htmx): HxRequest,
     HxBoosted(is_boosted): HxBoosted,
     Path(slug): Path<String>,
 ) -> Result<impl IntoResponse, AppError> {
     let slug = Slug::try_from(slug)?;
-    let path = format!("content/posts/{}.md", slug.as_str());
-    let raw = std::fs::read_to_string(path)?;
-    let post = parse_post(slug.as_str(), &raw)?;
+    let store = state.posts()?;
+    let post = Arc::clone(store.by_slug.get(slug.as_str()).ok_or(AppError::NotFound)?);
 
     if is_htmx && !is_boosted {
         let html = BlogPostFragmentTemplate { post }.render()?;

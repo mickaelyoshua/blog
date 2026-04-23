@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::blog::Post;
 use askama::Template;
 
@@ -37,7 +39,7 @@ pub struct ErrorTemplate {
 #[derive(Template)]
 #[template(path = "blog/list.html")]
 pub struct BlogListTemplate {
-    pub posts: Vec<Post>,
+    pub posts: Vec<Arc<Post>>,
     pub active_nav: &'static str,
     pub static_hash: &'static str,
 }
@@ -45,13 +47,13 @@ pub struct BlogListTemplate {
 #[derive(Template)]
 #[template(path = "blog/list_fragment.html")]
 pub struct BlogListFragmentTemplate {
-    pub posts: Vec<Post>,
+    pub posts: Vec<Arc<Post>>,
 }
 
 #[derive(Template)]
 #[template(path = "blog/post.html")]
 pub struct BlogPostTemplate {
-    pub post: Post,
+    pub post: Arc<Post>,
     pub active_nav: &'static str,
     pub static_hash: &'static str,
 }
@@ -59,7 +61,7 @@ pub struct BlogPostTemplate {
 #[derive(Template)]
 #[template(path = "blog/post_fragment.html")]
 pub struct BlogPostFragmentTemplate {
-    pub post: Post,
+    pub post: Arc<Post>,
 }
 
 pub mod filters {

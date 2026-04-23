@@ -1,4 +1,5 @@
-use std::sync::LazyLock;
+use std::collections::HashMap;
+use std::sync::{Arc, LazyLock};
 
 use chrono::NaiveDate;
 use pulldown_cmark::{CodeBlockKind, Event, Tag, TagEnd};
@@ -25,6 +26,29 @@ struct Frontmatter {
     title: String,
     date: NaiveDate,
     summary: String,
+}
+
+pub struct BlogStore {
+    pub all: Vec<Arc<Post>>,
+    pub by_slug: HashMap<String, Arc<Post>>,
+}
+
+impl BlogStore {
+    pub fn load(content_dir: &str) -> Result<Self, AppError> {
+        let posts = load_all_posts(content_dir)?;
+        let mut all = Vec::with_capacity(posts.len());
+        let mut by_slug = HashMap::with_capacity(posts.len());
+
+        for post in posts {
+            let key = post.slug.clone();
+            let shared = Arc::new(post);
+
+            all.push(Arc::clone(&shared));
+            by_slug.insert(key, Arc::clone(&shared));
+        }
+
+        Ok(Self { all, by_slug })
+    }
 }
 
 pub fn parse_post(slug: &str, raw_markdown: &str) -> Result<Post, AppError> {
