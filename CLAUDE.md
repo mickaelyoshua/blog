@@ -6,8 +6,7 @@
 - **Framework:** Axum 0.8 + `axum-htmx` (HTMX extractors/responders)
 - **Templates:** Askama (compile-time checked Jinja2-like templates)
 - **Frontend:** HTMX 2.0.4 (vendored in `static/vendor/`)
-- **Database:** PostgreSQL 16 + SQLx 0.8 (not needed for v1 — blog posts are markdown files, resume is hardcoded)
-- **Dev database:** docker-compose (PostgreSQL 16)
+- **Database:** none in v1 (blog posts are markdown files in `content/posts/`, resume is hardcoded). Will revisit if dynamic content is added.
 
 ## Architecture: HATEOAS / Hypermedia-Driven Application
 
@@ -80,18 +79,16 @@ static/            # Static assets served directly
   vendor/          # Vendored JS (htmx.min.js)
 content/
   posts/           # Blog posts as .md files (filename = slug)
-migrations/        # SQLx migrations (future)
 ```
 
 ## Commands
 
 ```sh
-cargo run                    # Run dev server
+cargo run                    # Run dev server (listens on $PORT, default 3000)
 cargo build --release        # Build release binary
 cargo test                   # Run tests
 cargo clippy                 # Lint
 cargo fmt                    # Format
-docker compose up -d         # Start local PostgreSQL (when needed)
 ```
 
 ## Conventions

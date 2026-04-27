@@ -20,7 +20,7 @@ See [CLAUDE.md](CLAUDE.md) for detailed architecture rules and patterns.
 | Backend    | Rust (2024) + Axum 0.8 + axum-htmx     |
 | Templates  | Askama (compile-time checked)           |
 | Frontend   | HTMX 2.0.4 (vendored, no build tools)  |
-| Database   | PostgreSQL 16 + SQLx 0.8 (future)      |
+| Database   | None in v1 — markdown files only        |
 | Styling    | Handwritten CSS, dark theme             |
 
 ## Getting Started
@@ -28,14 +28,13 @@ See [CLAUDE.md](CLAUDE.md) for detailed architecture rules and patterns.
 ### Prerequisites
 
 - [Rust](https://rustup.rs/) (latest stable, edition 2024)
-- [Docker](https://docs.docker.com/get-docker/) (for local PostgreSQL, when needed)
 
 ### Run locally
 
 ```sh
 git clone https://github.com/YOUR_USERNAME/blog.git
 cd blog
-cargo run
+cargo run                    # listens on $PORT (default 3000)
 # Server starts at http://localhost:3000
 ```
 
@@ -73,8 +72,6 @@ The app compiles to a single static binary. Hosting options under consideration:
 - **Render** — free tier available (with cold starts), $7/month always-on
 - **Hetzner Cloud** — self-managed VPS, ~€3.79/month
 - **Railway** — git-push deploys, $5/month hobby plan
-
-Database (for future features): **Neon** free tier (500 MB, scale-to-zero).
 
 ## License
 
