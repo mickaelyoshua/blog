@@ -3,5 +3,14 @@
 {% block title %}{{ post.title }} — Yoshua{% endblock %}
 
 {% block content %}
-{% include "blog/post_fragment.html" %}
+<article class="prose">
+  <nav class="back-link">
+    <a href="/blog">&larr; Blog</a>
+  </nav>
+  <header>
+    <span class="post-meta">{{ post.date|format_date_br }}</span>
+    <h1>{{ post.title }}</h1>
+  </header>
+  {{ post.content_html|safe }}
+</article>
 {% endblock %}

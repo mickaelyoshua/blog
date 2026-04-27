@@ -5,12 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{% block title %}Yoshua{% endblock %}</title>
     <link rel="stylesheet" href="/static/css/style.css?v={{ layout.style_hash }}" />
-    <script src="/static/vendor/htmx.min.js?v={{ layout.vendor_hash }}" defer></script>
   </head>
-  <body hx-boost="true">
-    <a href="#content" class="skip-link" hx-boost="false"
-      >Pular para o conteúdo</a
-    >
+  <body>
+    <a href="#content" class="skip-link">Pular para o conteúdo</a>
 
     <header class="site-header">
       <div class="container">

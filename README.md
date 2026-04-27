@@ -7,9 +7,8 @@ A personal website built with Rust, featuring a blog (markdown-based) and a resu
 This project follows the **HATEOAS / Hypermedia-Driven Application (HDA)** philosophy:
 
 - The server is the single source of truth — it returns **HTML, not JSON**
-- [HTMX](https://htmx.org/) enables partial page updates without client-side state management
-- Links, forms, and HTMX attributes are the only API — no separate data endpoints
-- Every page works with and without JavaScript (progressive enhancement)
+- Links and forms are the only API — no separate data endpoints
+- No client-side JavaScript: pages are plain server-rendered HTML
 
 See [CLAUDE.md](CLAUDE.md) for detailed architecture rules and patterns.
 
@@ -17,9 +16,9 @@ See [CLAUDE.md](CLAUDE.md) for detailed architecture rules and patterns.
 
 | Layer      | Technology                              |
 |------------|-----------------------------------------|
-| Backend    | Rust (2024) + Axum 0.8 + axum-htmx     |
+| Backend    | Rust (2024) + Axum 0.8                  |
 | Templates  | Askama (compile-time checked)           |
-| Frontend   | HTMX 2.0.4 (vendored, no build tools)  |
+| Frontend   | Server-rendered HTML, no JS             |
 | Database   | None in v1 — markdown files only        |
 | Styling    | Handwritten CSS, dark theme             |
 

@@ -3,9 +3,9 @@
 ## Stack
 
 - **Language:** Rust (Edition 2024)
-- **Framework:** Axum 0.8 + `axum-htmx` (HTMX extractors/responders)
+- **Framework:** Axum 0.8
 - **Templates:** Askama (compile-time checked Jinja2-like templates)
-- **Frontend:** HTMX 2.0.4 (vendored in `static/vendor/`)
+- **Frontend:** Server-rendered HTML, no client-side JavaScript.
 - **Database:** none in v1 (blog posts are markdown files in `content/posts/`, resume is hardcoded). Will revisit if dynamic content is added.
 
 ## Architecture: HATEOAS / Hypermedia-Driven Application
@@ -14,44 +14,30 @@ This project follows the **Hypermedia-Driven Application (HDA)** architecture. T
 
 ### Core Rules
 
-1. **Server returns HTML, never JSON.** Every response is HTML — either a full page or a fragment. No `/api/` JSON endpoints for the frontend.
-2. **HTML is the API.** Links (`<a>`), forms (`<form>`), and HTMX attributes (`hx-get`, `hx-post`, etc.) encode all available actions. The client needs zero out-of-band knowledge.
+1. **Server returns HTML, never JSON.** Every response is a complete HTML page. No `/api/` JSON endpoints for the frontend.
+2. **HTML is the API.** Links (`<a>`) and forms (`<form>`) encode all available actions. The client needs zero out-of-band knowledge.
 3. **No client-side state.** No JavaScript state management, no client-side data models. The DOM is the state.
-4. **Available actions change with state.** If a blog post has tags, the server renders tag links. If there are more pages, the server renders a "load more" button. The client never decides what to show — the HTML response encodes it.
+4. **Available actions change with state.** If a blog post has tags, the server renders tag links. If there are more pages, the server renders a pagination link. The client never decides what to show — the HTML response encodes it.
 
-### Response Pattern: Full Page vs Fragment
+### Response Pattern
 
-Route handlers must support two response modes:
-
-- **Full page** (direct navigation, no `HX-Request` header): Return complete HTML with layout, nav, head, etc.
-- **HTMX partial** (`HX-Request: true` header): Return only the HTML fragment the target element needs.
-
-Use the `axum-htmx` crate's `HxRequest` extractor:
+Route handlers return a single full-page Askama template:
 
 ```rust
-use axum_htmx::HxRequest;
-
 async fn blog_list(
-    HxRequest(is_htmx): HxRequest,
+    State(state): State<AppState>,
 ) -> Result<impl IntoResponse, AppError> {
-    let posts = load_posts()?;
-    if is_htmx {
-        Ok(BlogListFragment { posts }.into_response())
-    } else {
-        Ok(BlogListPage { posts }.into_response())
+    let store = state.posts()?;
+    let html = BlogListTemplate {
+        posts: store.all.clone(),
+        layout: LayoutContext::new("/blog"),
     }
+    .render()?;
+    Ok(Html(html))
 }
 ```
 
-**Exception:** `hx-boost` requests send `HX-Request: true` but expect a full page (HTMX extracts the `<body>`). Check `HxBoosted` when needed.
-
-### HTMX Patterns
-
-- **Navigation:** `hx-boost="true"` on `<body>` — all links become AJAX, browser history works via `hx-push-url`
-- **Search/filter:** `hx-get` with `hx-trigger="input changed delay:500ms"` — server returns filtered HTML fragment
-- **Pagination:** "Load more" button with `hx-get="/blog?page=N"` swapping itself out with new content
-- **Loading states:** `hx-indicator` pointing to a spinner element (HTMX manages visibility via CSS classes)
-- **Errors:** Server returns error UI as HTML (e.g., re-renders form with error messages on 422)
+If interactive features (search-as-you-type, infinite scroll, partial swaps) become necessary later, prefer adding **HTMX** as a thin progressive-enhancement layer over reaching for an SPA framework. Yew or Leptos are options but should only be considered for genuinely client-heavy widgets, not for navigation or content rendering.
 
 ### Anti-Patterns (Do NOT Do)
 
@@ -60,7 +46,7 @@ async fn blog_list(
 - No JavaScript state management (Redux, stores, signals, etc.)
 - No generic data API (`/api/v1/...`) for the frontend's own consumption
 - No JavaScript that renders HTML from data — the server renders all HTML
-- No separate `.js` files for behavior — use HTMX attributes and inline scripts only when necessary (Locality of Behavior principle)
+- No separate `.js` files for behavior — keep behavior local to the templates if/when JS is added (Locality of Behavior principle)
 
 ## Project Structure
 
@@ -68,15 +54,15 @@ async fn blog_list(
 src/
   main.rs          # Entry point, router, server setup
   routes/          # Axum route handlers (mod per feature: blog, resume, etc.)
-  templates/       # Askama template structs (full pages + fragments)
+  templates/       # Askama template structs
   error.rs         # App-wide error types
 templates/         # Askama HTML templates (.html)
-  base.html        # Base layout (wraps full-page responses)
-  blog/            # Blog-related templates (page + fragment variants)
+  base.html        # Base layout (wraps every page)
+  blog/            # Blog templates: list.html, post.html
   resume.html      # Resume page
 static/            # Static assets served directly
-  css/
-  vendor/          # Vendored JS (htmx.min.js)
+  css/             # style.css
+  fonts/           # Self-hosted IBM Plex Sans/Mono (woff2)
 content/
   posts/           # Blog posts as .md files (filename = slug)
 ```
@@ -98,14 +84,12 @@ cargo fmt                    # Format
 - Use `cargo fmt` before committing
 - Use `cargo clippy` — treat warnings as errors in CI
 - Templates go in `templates/` at project root; Askama template structs go in `src/templates/`
-- Route handlers return `Result<impl IntoResponse, AppError>`
-- Every route that serves HTML must handle both full-page and fragment responses (via `HxRequest` extractor)
+- Route handlers return `Result<impl IntoResponse, AppError>` and render a single full-page template
 
 ### Content
 
 - Blog posts are markdown files in `content/posts/` with YAML frontmatter (title, date, tags, summary)
 - CSS follows a single-file approach (`static/css/style.css`) — no build tooling
-- HTMX attributes live in templates, not in separate JS files
 
 ### Language
 

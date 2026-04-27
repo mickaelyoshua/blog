@@ -5,7 +5,6 @@ edition = "2024"
 
 [dependencies]
 axum = { version = "0.8.8" }
-axum-htmx = { version = "0.8.1" }
 askama = { version = "0.15.6" }
 tokio = { version = "1.50.0", features = ["full"] }
 tower-http = { version = "0.6.8", features = ["fs", "compression-gzip", "trace", "timeout"] }

@@ -4,12 +4,10 @@ use crate::blog::Post;
 use askama::Template;
 
 const STYLE_HASH: &str = env!("STYLE_HASH");
-const VENDOR_HASH: &str = env!("VENDOR_HASH");
 
 pub struct LayoutContext {
     pub active_nav: &'static str,
     pub style_hash: &'static str,
-    pub vendor_hash: &'static str,
 }
 
 impl LayoutContext {
@@ -17,7 +15,6 @@ impl LayoutContext {
         Self {
             active_nav,
             style_hash: STYLE_HASH,
-            vendor_hash: VENDOR_HASH,
         }
     }
 }
@@ -29,18 +26,10 @@ pub struct HomeTemplate {
 }
 
 #[derive(Template)]
-#[template(path = "home_fragment.html")]
-pub struct HomeFragmentTemplate;
-
-#[derive(Template)]
 #[template(path = "resume.html")]
 pub struct ResumeTemplate {
     pub layout: LayoutContext,
 }
-
-#[derive(Template)]
-#[template(path = "resume_fragment.html")]
-pub struct ResumeFragmentTemplate;
 
 #[derive(Template)]
 #[template(path = "error.html")]
@@ -58,22 +47,10 @@ pub struct BlogListTemplate {
 }
 
 #[derive(Template)]
-#[template(path = "blog/list_fragment.html")]
-pub struct BlogListFragmentTemplate {
-    pub posts: Vec<Arc<Post>>,
-}
-
-#[derive(Template)]
 #[template(path = "blog/post.html")]
 pub struct BlogPostTemplate {
     pub post: Arc<Post>,
     pub layout: LayoutContext,
-}
-
-#[derive(Template)]
-#[template(path = "blog/post_fragment.html")]
-pub struct BlogPostFragmentTemplate {
-    pub post: Arc<Post>,
 }
 
 pub mod filters {
