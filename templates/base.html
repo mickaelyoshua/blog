@@ -4,8 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{% block title %}Yoshua{% endblock %}</title>
-    <link rel="stylesheet" href="/static/css/style.css?v={{ static_hash }}" />
-    <script src="/static/vendor/htmx.min.js?v={{ static_hash }}" defer></script>
+    <link rel="stylesheet" href="/static/css/style.css?v={{ layout.style_hash }}" />
+    <script src="/static/vendor/htmx.min.js?v={{ layout.vendor_hash }}" defer></script>
   </head>
   <body hx-boost="true">
     <a href="#content" class="skip-link" hx-boost="false"
@@ -16,9 +16,9 @@
       <div class="container">
         <a href="/" class="logo">Yoshua</a>
         <nav class="site-nav" aria-label="Navegação principal">
-          <a href="/"{% if active_nav == "/" %} class="active"{% endif %}>Início</a>
-          <a href="/blog"{% if active_nav == "/blog" %} class="active"{% endif %}>Blog</a>
-          <a href="/cv"{% if active_nav == "/cv" %} class="active"{% endif %}>Currículo</a>
+          <a href="/"{% if layout.active_nav == "/" %} class="active"{% endif %}>Início</a>
+          <a href="/blog"{% if layout.active_nav == "/blog" %} class="active"{% endif %}>Blog</a>
+          <a href="/cv"{% if layout.active_nav == "/cv" %} class="active"{% endif %}>Currículo</a>
         </nav>
       </div>
     </header>

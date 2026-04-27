@@ -3,13 +3,29 @@ use std::sync::Arc;
 use crate::blog::Post;
 use askama::Template;
 
-pub const STATIC_HASH: &str = env!("STATIC_HASH");
+const STYLE_HASH: &str = env!("STYLE_HASH");
+const VENDOR_HASH: &str = env!("VENDOR_HASH");
+
+pub struct LayoutContext {
+    pub active_nav: &'static str,
+    pub style_hash: &'static str,
+    pub vendor_hash: &'static str,
+}
+
+impl LayoutContext {
+    pub fn new(active_nav: &'static str) -> Self {
+        Self {
+            active_nav,
+            style_hash: STYLE_HASH,
+            vendor_hash: VENDOR_HASH,
+        }
+    }
+}
 
 #[derive(Template)]
 #[template(path = "home.html")]
 pub struct HomeTemplate {
-    pub active_nav: &'static str,
-    pub static_hash: &'static str,
+    pub layout: LayoutContext,
 }
 
 #[derive(Template)]
@@ -19,8 +35,7 @@ pub struct HomeFragmentTemplate;
 #[derive(Template)]
 #[template(path = "resume.html")]
 pub struct ResumeTemplate {
-    pub active_nav: &'static str,
-    pub static_hash: &'static str,
+    pub layout: LayoutContext,
 }
 
 #[derive(Template)]
@@ -32,16 +47,14 @@ pub struct ResumeFragmentTemplate;
 pub struct ErrorTemplate {
     pub status: u16,
     pub message: String,
-    pub active_nav: &'static str,
-    pub static_hash: &'static str,
+    pub layout: LayoutContext,
 }
 
 #[derive(Template)]
 #[template(path = "blog/list.html")]
 pub struct BlogListTemplate {
     pub posts: Vec<Arc<Post>>,
-    pub active_nav: &'static str,
-    pub static_hash: &'static str,
+    pub layout: LayoutContext,
 }
 
 #[derive(Template)]
@@ -54,8 +67,7 @@ pub struct BlogListFragmentTemplate {
 #[template(path = "blog/post.html")]
 pub struct BlogPostTemplate {
     pub post: Arc<Post>,
-    pub active_nav: &'static str,
-    pub static_hash: &'static str,
+    pub layout: LayoutContext,
 }
 
 #[derive(Template)]

@@ -5,7 +5,7 @@ use axum::{
 };
 use tracing::{error, warn};
 
-use crate::templates::{ErrorTemplate, STATIC_HASH};
+use crate::templates::{ErrorTemplate, LayoutContext};
 
 #[derive(Debug)]
 pub enum AppError {
@@ -40,8 +40,7 @@ impl IntoResponse for AppError {
         let html = ErrorTemplate {
             status: status.as_u16(),
             message: message.to_string(),
-            active_nav: "",
-            static_hash: STATIC_HASH,
+            layout: LayoutContext::new(""),
         }
         .render()
         .unwrap_or_else(|_| format!("<h1>{}</h1><p>{message}</p>", status.as_u16()));

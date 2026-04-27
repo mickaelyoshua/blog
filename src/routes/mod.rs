@@ -13,42 +13,55 @@ use crate::{
     state::AppState,
     templates::{
         BlogListFragmentTemplate, BlogListTemplate, BlogPostFragmentTemplate, BlogPostTemplate,
-        HomeFragmentTemplate, HomeTemplate, ResumeFragmentTemplate, ResumeTemplate, STATIC_HASH,
+        HomeFragmentTemplate, HomeTemplate, LayoutContext, ResumeFragmentTemplate, ResumeTemplate,
     },
 };
+
+fn render<F, P, FT, PT>(
+    is_htmx: bool,
+    is_boosted: bool,
+    fragment: F,
+    page: P,
+) -> Result<Html<String>, AppError>
+where
+    F: FnOnce() -> FT,
+    P: FnOnce() -> PT,
+    FT: Template,
+    PT: Template,
+{
+    if is_htmx && !is_boosted {
+        Ok(Html(fragment().render()?))
+    } else {
+        Ok(Html(page().render()?))
+    }
+}
 
 pub async fn home(
     HxRequest(is_htmx): HxRequest,
     HxBoosted(is_boosted): HxBoosted,
 ) -> Result<impl IntoResponse, AppError> {
-    if is_htmx && !is_boosted {
-        let html = HomeFragmentTemplate.render()?;
-        Ok(Html(html))
-    } else {
-        let html = HomeTemplate {
-            active_nav: "/",
-            static_hash: STATIC_HASH,
-        }
-        .render()?;
-        Ok(Html(html))
-    }
+    render(
+        is_htmx,
+        is_boosted,
+        || HomeFragmentTemplate,
+        || HomeTemplate {
+            layout: LayoutContext::new("/"),
+        },
+    )
 }
 
 pub async fn resume(
     HxRequest(is_htmx): HxRequest,
     HxBoosted(is_boosted): HxBoosted,
 ) -> Result<impl IntoResponse, AppError> {
-    if is_htmx && !is_boosted {
-        let html = ResumeFragmentTemplate.render()?;
-        Ok(Html(html))
-    } else {
-        let html = ResumeTemplate {
-            active_nav: "/cv",
-            static_hash: STATIC_HASH,
-        }
-        .render()?;
-        Ok(Html(html))
-    }
+    render(
+        is_htmx,
+        is_boosted,
+        || ResumeFragmentTemplate,
+        || ResumeTemplate {
+            layout: LayoutContext::new("/cv"),
+        },
+    )
 }
 
 pub async fn blog_list(
@@ -57,21 +70,17 @@ pub async fn blog_list(
     HxBoosted(is_boosted): HxBoosted,
 ) -> Result<impl IntoResponse, AppError> {
     let store = state.posts()?;
-    if is_htmx && !is_boosted {
-        let html = BlogListFragmentTemplate {
+    render(
+        is_htmx,
+        is_boosted,
+        || BlogListFragmentTemplate {
             posts: store.all.clone(),
-        }
-        .render()?;
-        Ok(Html(html))
-    } else {
-        let html = BlogListTemplate {
+        },
+        || BlogListTemplate {
             posts: store.all.clone(),
-            active_nav: "/blog",
-            static_hash: STATIC_HASH,
-        }
-        .render()?;
-        Ok(Html(html))
-    }
+            layout: LayoutContext::new("/blog"),
+        },
+    )
 }
 
 pub async fn blog_post(
@@ -83,17 +92,17 @@ pub async fn blog_post(
     let slug = Slug::try_from(slug)?;
     let store = state.posts()?;
     let post = Arc::clone(store.by_slug.get(slug.as_str()).ok_or(AppError::NotFound)?);
+    let post_for_fragment = Arc::clone(&post);
 
-    if is_htmx && !is_boosted {
-        let html = BlogPostFragmentTemplate { post }.render()?;
-        Ok(Html(html))
-    } else {
-        let html = BlogPostTemplate {
+    render(
+        is_htmx,
+        is_boosted,
+        move || BlogPostFragmentTemplate {
+            post: post_for_fragment,
+        },
+        move || BlogPostTemplate {
             post,
-            active_nav: "/blog",
-            static_hash: STATIC_HASH,
-        }
-        .render()?;
-        Ok(Html(html))
-    }
+            layout: LayoutContext::new("/blog"),
+        },
+    )
 }
