@@ -183,7 +183,7 @@ pub fn load_all_posts(content_dir: &str) -> Result<Vec<Post>, AppError> {
         }
     }
 
-    posts.sort_by(|a, b| b.date.cmp(&a.date));
+    posts.sort_by_key(|b| std::cmp::Reverse(b.date));
     Ok(posts)
 }
 
