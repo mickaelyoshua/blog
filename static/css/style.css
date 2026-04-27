@@ -431,16 +431,6 @@ pre code {
   color: var(--blue);
 }
 
-/* ===== HTMX indicator ===== */
-.htmx-indicator {
-  display: none;
-}
-
-.htmx-request .htmx-indicator,
-.htmx-request.htmx-indicator {
-  display: inline-block;
-}
-
 /* ===== Footer ===== */
 .site-footer {
   border-top: 1px solid var(--border);
