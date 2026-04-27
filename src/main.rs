@@ -14,8 +14,6 @@ use tower_http::{
 use tracing::{error, info};
 use tracing_subscriber::{EnvFilter, fmt};
 
-const PORT: &str = "3000";
-
 #[tokio::main]
 async fn main() {
     fmt()
@@ -24,6 +22,11 @@ async fn main() {
                 .unwrap_or_else(|_| EnvFilter::new("info,blog=debug,tower_http=debug")),
         )
         .init();
+
+    let port: u16 = std::env::var("PORT")
+        .ok()
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(3000);
 
     let env = Env::from_env();
     info!(?env, "Detected environment");
@@ -48,14 +51,14 @@ async fn main() {
         .layer(CompressionLayer::new())
         .layer(from_fn_with_state(env, security_headers));
 
-    let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{PORT}"))
+    let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{port}"))
         .await
         .unwrap_or_else(|e| {
-            error!(error = %e, "Failed to bind to port {PORT}");
+            error!(error = %e, "Failed to bind to port {port}");
             std::process::exit(1);
         });
 
-    info!("Server listening at http://localhost:{PORT}");
+    info!("Server listening at http://localhost:{port}");
 
     axum::serve(listener, router)
         .with_graceful_shutdown(shutdown_signal())
