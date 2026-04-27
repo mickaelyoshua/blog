@@ -16,3 +16,4 @@ tracing = { version = "0.1.44" }
 tracing-subscriber = { version = "0.3.23" , features = ["env-filter"] }
 chrono = { version = "0.4.44", features = ["serde"] }
 syntect = { version = "5.2", default-features = false, features = ["default-syntaxes", "html", "parsing", "regex-fancy"] }
+ammonia = { version = "4.1.2" }

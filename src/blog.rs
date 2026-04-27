@@ -13,6 +13,13 @@ use crate::error::AppError;
 
 static SYNTAX_SET: LazyLock<SyntaxSet> = LazyLock::new(SyntaxSet::load_defaults_newlines);
 
+static SANITIZER: LazyLock<ammonia::Builder<'static>> = LazyLock::new(|| {
+    let mut b = ammonia::Builder::default();
+    b.add_tag_attributes("code", &["class"]);
+    b.add_tag_attributes("span", &["class"]);
+    b
+});
+
 pub struct Post {
     pub slug: String,
     pub title: String,
@@ -109,6 +116,7 @@ pub fn parse_post(slug: &str, raw_markdown: &str) -> Result<Post, AppError> {
             }
         }
     }
+    let html = SANITIZER.clean(&html).to_string();
 
     Ok(Post {
         slug: slug.to_string(),
@@ -136,7 +144,15 @@ fn highlight_code(code: &str, lang: Option<&str>) -> String {
     }
 
     let inner = generator.finalize();
-    let lang_attr = lang.unwrap_or("text");
+    let lang_attr = match lang {
+        Some(l)
+            if l.bytes()
+                .all(|b| b.is_ascii_alphanumeric() || b == b'_' || b == b'+' || b == b'-') =>
+        {
+            l
+        }
+        _ => "text",
+    };
     format!("<pre><code class=\"highlight language-{lang_attr}\">{inner}</code></pre>")
 }
 
