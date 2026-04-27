@@ -1,7 +1,9 @@
 use std::time::Duration;
 
-use axum::{Router, http::StatusCode, routing::get};
+use axum::{Router, http::StatusCode, middleware::from_fn_with_state, routing::get};
 use blog::{
+    env::Env,
+    middleware::security_headers,
     routes::{blog_list, blog_post, home, resume},
     state::AppState,
 };
@@ -23,6 +25,9 @@ async fn main() {
         )
         .init();
 
+    let env = Env::from_env();
+    info!(?env, "Detected environment");
+
     let state = AppState::new("content/posts").expect("Error on reading content directory.");
 
     let app = Router::new()
@@ -40,7 +45,8 @@ async fn main() {
     // No trace
     let router = app
         .nest_service("/static", ServeDir::new("static"))
-        .layer(CompressionLayer::new());
+        .layer(CompressionLayer::new())
+        .layer(from_fn_with_state(env, security_headers));
 
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{PORT}"))
         .await
