@@ -58,13 +58,13 @@ impl BlogStore {
     }
 }
 
-pub fn parse_post(slug: &str, raw_markdown: &str) -> Result<Post, AppError> {
+fn split_frontmatter<'a>(slug: &str, raw: &'a str) -> Result<(Frontmatter, &'a str), AppError> {
     let bad = |reason: &str| AppError::BadPost {
         slug: slug.to_string(),
         reason: reason.to_string(),
     };
 
-    let after_opening = raw_markdown
+    let after_opening = raw
         .strip_prefix("---\n")
         .ok_or_else(|| bad("missing opening --- fence"))?;
 
@@ -76,8 +76,11 @@ pub fn parse_post(slug: &str, raw_markdown: &str) -> Result<Post, AppError> {
         slug: slug.to_string(),
         reason: format!("yml: {e}"),
     })?;
-    let body = body.trim_start_matches('\n');
 
+    Ok((fm, body.trim_start_matches('\n')))
+}
+
+fn render_markdown_to_html(body: &str) -> String {
     let parser = pulldown_cmark::Parser::new(body);
     let mut html = String::new();
     let mut code_buffer = String::new();
@@ -116,6 +119,13 @@ pub fn parse_post(slug: &str, raw_markdown: &str) -> Result<Post, AppError> {
             }
         }
     }
+
+    html
+}
+
+pub fn parse_post(slug: &str, raw_markdown: &str) -> Result<Post, AppError> {
+    let (fm, body) = split_frontmatter(slug, raw_markdown)?;
+    let html = render_markdown_to_html(body);
     let html = SANITIZER.clean(&html).to_string();
 
     Ok(Post {
