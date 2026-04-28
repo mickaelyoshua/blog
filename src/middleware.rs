@@ -28,23 +28,20 @@ pub async fn security_headers(State(env): State<Env>, req: Request, next: Next) 
     let mut response = next.run(req).await;
     let headers = response.headers_mut();
 
-    headers.insert(
-        header::X_CONTENT_TYPE_OPTIONS,
-        HeaderValue::from_static("nosniff"),
-    );
-    headers.insert(
-        header::REFERRER_POLICY,
-        HeaderValue::from_static("strict-origin-when-cross-origin"),
-    );
-    headers.insert(header::X_FRAME_OPTIONS, HeaderValue::from_static("DENY"));
-    headers.insert(
-        header::CONTENT_SECURITY_POLICY,
-        HeaderValue::from_static(CSP),
-    );
-    headers.insert(
-        HeaderName::from_static("permissions-policy"),
-        HeaderValue::from_static(PERMISSIONS_POLICY),
-    );
+    let static_headers: [(HeaderName, &'static str); 5] = [
+        (header::X_CONTENT_TYPE_OPTIONS, "nosniff"),
+        (header::REFERRER_POLICY, "strict-origin-when-cross-origin"),
+        (header::X_FRAME_OPTIONS, "DENY"),
+        (header::CONTENT_SECURITY_POLICY, CSP),
+        (
+            HeaderName::from_static("permissions-policy"),
+            PERMISSIONS_POLICY,
+        ),
+    ];
+
+    for (name, value) in static_headers {
+        headers.insert(name, HeaderValue::from_static(value));
+    }
 
     if env == Env::Production {
         headers.insert(
