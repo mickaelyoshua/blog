@@ -1,0 +1,12 @@
+target/
+.git/
+.gitignore
+resume.pdf
+plan.md
+CRITICAL_REVIEW.md
+*.swp
+.idea/
+.vscode/
+.claude/
+Dockerfile
+.dockerignore
