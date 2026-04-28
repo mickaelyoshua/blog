@@ -2,7 +2,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::Hasher;
 
 fn hash_file(path: &str) -> String {
-    let bytes = std::fs::read(path).unwrap_or_default();
+    let bytes = std::fs::read(path).expect("static/css/style.css must exist for cache-busting hash");
     let mut hasher = DefaultHasher::new();
     hasher.write(&bytes);
     let hash = format!("{:016x}", hasher.finish());

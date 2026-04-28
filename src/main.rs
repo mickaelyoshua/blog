@@ -33,7 +33,7 @@ async fn main() {
         .and_then(|s| s.parse().ok())
         .unwrap_or(3000);
 
-    let state = AppState::new("content/posts").expect("Error on reading content directory.");
+    let state = AppState::new("content/posts").expect("failed to load content/posts at startup");
 
     let app = Router::new()
         .route("/", get(home))
@@ -63,10 +63,15 @@ async fn main() {
 
     info!("Server listening at http://localhost:{port}");
 
-    axum::serve(listener, router)
+    if let Err(e) = axum::serve(listener, router)
         .with_graceful_shutdown(shutdown_signal())
         .await
-        .unwrap()
+    {
+        error!(error = %e, "server terminated unexpectedly");
+        std::process::exit(1);
+    }
+
+    info!("Server shut down cleanly");
 }
 
 async fn shutdown_signal() {
@@ -91,4 +96,6 @@ async fn shutdown_signal() {
         _ = ctrl_c => {},
         _ = terminate => {},
     }
+
+    info!("Shutdown signal received, draining in-flight requests");
 }
