@@ -220,21 +220,19 @@ impl TryFrom<String> for Slug {
     fn try_from(value: String) -> Result<Self, Self::Error> {
         const MAX_LEN: usize = 64;
 
-        if value.is_empty() || value.len() > MAX_LEN {
-            return Err(AppError::NotFound);
-        }
+        let valid = !value.is_empty()
+            && value.len() <= MAX_LEN
+            && value
+                .bytes()
+                .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
+            && !value.starts_with('-')
+            && !value.ends_with('-')
+            && !value.contains("--");
 
-        let ok = value
-            .bytes()
-            .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-');
-        if !ok {
-            return Err(AppError::NotFound);
+        if valid {
+            Ok(Slug(value))
+        } else {
+            Err(AppError::NotFound)
         }
-
-        if value.starts_with('-') || value.ends_with('-') || value.contains("--") {
-            return Err(AppError::NotFound);
-        }
-
-        Ok(Slug(value))
     }
 }
