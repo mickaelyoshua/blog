@@ -16,25 +16,20 @@ pub enum AppError {
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
-        let (status, message) = match &self {
-            AppError::NotFound => {
-                warn!("Not Found");
-                (StatusCode::NOT_FOUND, "Página não encontrada")
-            }
-            AppError::Internal(e) => {
-                error!(error = %e, "Internal Error");
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "Erro interno do servidor",
-                )
-            }
+        match &self {
+            AppError::NotFound => warn!("Not Found"),
+            AppError::Internal(e) => error!(error = %e, "Internal Error"),
             AppError::BadPost { slug, reason } => {
-                error!(slug = %slug, reason = %reason, "Bad post");
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "Erro interno do servidor",
-                )
+                error!(slug = %slug, reason = %reason, "Bad post")
             }
+        }
+
+        let (status, message) = match &self {
+            AppError::NotFound => (StatusCode::NOT_FOUND, "Página não encontrada"),
+            _ => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Erro interno do servidor",
+            ),
         };
 
         let html = ErrorTemplate {
