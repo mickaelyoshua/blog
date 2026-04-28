@@ -10,10 +10,12 @@ use crate::{
     blog::Slug,
     error::AppError,
     state::AppState,
-    templates::{
-        BlogListTemplate, BlogPostTemplate, HomeTemplate, LayoutContext, ResumeTemplate,
-    },
+    templates::{BlogListTemplate, BlogPostTemplate, HomeTemplate, LayoutContext, ResumeTemplate},
 };
+
+pub async fn healthz() -> &'static str {
+    "ok"
+}
 
 pub async fn home() -> Result<impl IntoResponse, AppError> {
     let html = HomeTemplate {

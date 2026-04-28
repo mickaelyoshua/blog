@@ -4,7 +4,7 @@ use axum::{Router, http::StatusCode, middleware::from_fn_with_state, routing::ge
 use blog::{
     env::Env,
     middleware::security_headers,
-    routes::{blog_list, blog_post, home, resume},
+    routes::{blog_list, blog_post, healthz, home, resume},
     state::AppState,
 };
 use tokio::signal::unix::SignalKind;
@@ -38,6 +38,7 @@ async fn main() {
         .route("/blog", get(blog_list))
         .route("/blog/{slug}", get(blog_post))
         .route("/cv", get(resume))
+        .route("/healthz", get(healthz))
         .layer(TimeoutLayer::with_status_code(
             StatusCode::REQUEST_TIMEOUT,
             Duration::from_secs(10),
