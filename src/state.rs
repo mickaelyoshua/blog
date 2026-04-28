@@ -1,3 +1,14 @@
+// Two AppState implementations are gated by `cfg(debug_assertions)`:
+//
+// - Release builds load `content/posts/` once at startup and serve every
+//   request from a shared `Arc<BlogStore>`.
+// - Debug builds re-read the directory on every request so authors get
+//   hot-reload of markdown files without restarting `cargo run`.
+//
+// The dev path still calls `BlogStore::load` once in `new()` (discarding the
+// result) so that a broken posts directory fails the boot, not the first
+// request.
+
 use crate::{blog::BlogStore, error::AppError};
 use std::sync::Arc;
 

@@ -1,3 +1,8 @@
+// Computes a short content hash of style.css and exposes it as the STYLE_HASH
+// env var. Templates use it as `?v={{ layout.style_hash }}` on the stylesheet
+// link to bust the browser cache when CSS changes. The rerun-if-changed line
+// makes Cargo rebuild whenever the CSS is edited.
+
 use std::collections::hash_map::DefaultHasher;
 use std::hash::Hasher;
 

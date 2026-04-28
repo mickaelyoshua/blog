@@ -32,6 +32,9 @@ impl IntoResponse for AppError {
             ),
         };
 
+        // If the error template itself fails to render, fall back to raw HTML.
+        // Anything that re-enters AppError-producing code here would loop
+        // forever (error → render fail → AppError → render fail → …).
         let html = ErrorTemplate {
             status: status.as_u16(),
             message: message.to_string(),

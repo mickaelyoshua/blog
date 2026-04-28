@@ -13,6 +13,10 @@ use crate::error::AppError;
 
 static SYNTAX_SET: LazyLock<SyntaxSet> = LazyLock::new(SyntaxSet::load_defaults_newlines);
 
+// `class` is added to the allowlist for `code` and `span` because syntect
+// emits `<span class="sy-…">` markers for syntax highlighting that ammonia
+// would otherwise strip. This is the trust-boundary contract between the
+// highlighter (which we trust) and user-authored markdown (which we don't).
 static SANITIZER: LazyLock<ammonia::Builder<'static>> = LazyLock::new(|| {
     let mut b = ammonia::Builder::default();
     b.add_tag_attributes("code", &["class"]);
@@ -125,6 +129,9 @@ fn render_markdown_to_html(body: &str) -> String {
 
 pub fn parse_post(slug: &str, raw_markdown: &str) -> Result<Post, AppError> {
     let (fm, body) = split_frontmatter(slug, raw_markdown)?;
+    // Pipeline order matters: parse markdown → highlight code blocks → sanitize.
+    // Sanitization runs last so syntect-generated HTML passes through the same
+    // trust boundary as the rest of the user content.
     let html = render_markdown_to_html(body);
     let html = SANITIZER.clean(&html).to_string();
 
@@ -154,6 +161,9 @@ fn highlight_code(code: &str, lang: Option<&str>) -> String {
     }
 
     let inner = generator.finalize();
+    // `lang` is interpolated directly into `class="language-{}"`. Restrict it
+    // to a safe byte set so a fenced-block language tag can't break out of the
+    // attribute (XSS defense). Anything else collapses to "text".
     let lang_attr = match lang {
         Some(l)
             if l.bytes()
@@ -187,6 +197,7 @@ pub fn load_all_posts(content_dir: &str) -> Result<Vec<Post>, AppError> {
             continue;
         }
 
+        // One bad post must not 500 the whole index — log and move on.
         match load_one_post(&path) {
             Ok(post) => posts.push(post),
             Err(e) => warn!(path = %path.display(), error = ?e, "skipping broken post"),
@@ -218,6 +229,11 @@ impl TryFrom<String> for Slug {
     type Error = AppError;
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
+        // Slugs are the canonical URL form: ASCII lowercase + digits + single
+        // hyphens, no leading/trailing/double `-`. The 64-byte cap matches
+        // typical filename limits and bounds template/log output.
+        // Invalid slugs return NotFound (not BadRequest) so we don't reveal
+        // whether a slug was malformed vs. simply absent.
         const MAX_LEN: usize = 64;
 
         let valid = !value.is_empty()

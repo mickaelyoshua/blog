@@ -48,7 +48,8 @@ async fn main() {
         .layer(TraceLayer::new_for_http())
         .with_state(state);
 
-    // No trace
+    // /static and the security-headers layer are mounted outside TraceLayer so
+    // per-asset requests don't generate spans (would drown out request traces).
     let router = app
         .nest_service("/static", ServeDir::new("static"))
         .layer(CompressionLayer::new())
