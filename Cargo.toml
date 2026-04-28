@@ -17,6 +17,11 @@ chrono = { version = "0.4.44", features = ["serde"] }
 syntect = { version = "5.2", default-features = false, features = ["default-syntaxes", "html", "parsing", "regex-fancy"] }
 ammonia = { version = "4.1.2" }
 
+[dev-dependencies]
+tower = { version = "0.5", features = ["util"] }
+http-body-util = "0.1"
+tempfile = "3"
+
 [profile.release]
 strip = true
 lto = "thin"

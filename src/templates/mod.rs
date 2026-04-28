@@ -71,14 +71,57 @@ pub mod filters {
         "dezembro",
     ];
 
+    pub(crate) fn render_date_br(date: &NaiveDate) -> String {
+        let month_name = MONTH_PT[date.month() as usize - 1];
+        format!("{} de {} de {}", date.day(), month_name, date.year())
+    }
+
     #[askama::filter_fn]
     pub fn format_date_br(date: &NaiveDate, _env: &dyn askama::Values) -> askama::Result<String> {
-        let month_name = MONTH_PT[date.month() as usize - 1];
-        Ok(format!(
-            "{} de {} de {}",
-            date.day(),
-            month_name,
-            date.year()
-        ))
+        Ok(render_date_br(date))
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        fn fmt(y: i32, m: u32, d: u32) -> String {
+            render_date_br(&NaiveDate::from_ymd_opt(y, m, d).unwrap())
+        }
+
+        #[test]
+        fn formats_canonical_example_from_claude_md() {
+            // CLAUDE.md commits the project to this exact format:
+            // "20 de março de 2026". This test pins the accents and word
+            // separators against a future regression.
+            assert_eq!(fmt(2026, 3, 20), "20 de março de 2026");
+        }
+
+        #[test]
+        fn formats_january_with_pt_br_name() {
+            assert_eq!(fmt(2026, 1, 1), "1 de janeiro de 2026");
+        }
+
+        #[test]
+        fn formats_december_boundary() {
+            assert_eq!(fmt(2026, 12, 31), "31 de dezembro de 2026");
+        }
+
+        #[test]
+        fn does_not_zero_pad_day() {
+            // "1" not "01" — matches Brazilian written convention.
+            assert_eq!(fmt(2026, 5, 1), "1 de maio de 2026");
+            assert_eq!(fmt(2026, 5, 9), "9 de maio de 2026");
+        }
+
+        #[test]
+        fn includes_full_month_names_with_accents() {
+            assert_eq!(fmt(2026, 2, 15), "15 de fevereiro de 2026");
+            assert_eq!(fmt(2026, 3, 15), "15 de março de 2026");
+            assert_eq!(fmt(2026, 4, 15), "15 de abril de 2026");
+            assert_eq!(fmt(2026, 6, 15), "15 de junho de 2026");
+            assert_eq!(fmt(2026, 9, 15), "15 de setembro de 2026");
+            assert_eq!(fmt(2026, 11, 15), "15 de novembro de 2026");
+        }
     }
 }

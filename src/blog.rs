@@ -252,3 +252,437 @@ impl TryFrom<String> for Slug {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    mod slug {
+        use super::*;
+
+        fn assert_rejected(input: &str) {
+            match Slug::try_from(input.to_string()) {
+                Ok(_) => panic!("expected {input:?} to be rejected, but it was accepted"),
+                Err(AppError::NotFound) => {}
+                Err(other) => panic!(
+                    "expected NotFound for {input:?}, got {other:?} (anti-oracle: malformed slugs must be indistinguishable from absent slugs)"
+                ),
+            }
+        }
+
+        #[test]
+        fn accepts_lowercase_alphanumeric_with_single_hyphens() {
+            let slug = Slug::try_from("hello-world-2026".to_string()).unwrap();
+            assert_eq!(slug.as_str(), "hello-world-2026");
+        }
+
+        #[test]
+        fn accepts_single_word() {
+            assert_eq!(Slug::try_from("rust".to_string()).unwrap().as_str(), "rust");
+        }
+
+        #[test]
+        fn accepts_digits_only() {
+            assert_eq!(Slug::try_from("2026".to_string()).unwrap().as_str(), "2026");
+        }
+
+        #[test]
+        fn rejects_empty() {
+            assert_rejected("");
+        }
+
+        #[test]
+        fn rejects_uppercase() {
+            assert_rejected("Hello-World");
+            assert_rejected("HELLO");
+        }
+
+        #[test]
+        fn rejects_path_traversal_dotdot() {
+            assert_rejected("..");
+            assert_rejected("../etc/passwd");
+            assert_rejected("foo/../bar");
+        }
+
+        #[test]
+        fn rejects_forward_slash() {
+            assert_rejected("foo/bar");
+            assert_rejected("/foo");
+        }
+
+        #[test]
+        fn rejects_leading_hyphen() {
+            assert_rejected("-foo");
+        }
+
+        #[test]
+        fn rejects_trailing_hyphen() {
+            assert_rejected("foo-");
+        }
+
+        #[test]
+        fn rejects_double_hyphen() {
+            assert_rejected("foo--bar");
+            assert_rejected("--");
+        }
+
+        #[test]
+        fn rejects_non_ascii() {
+            // pt-BR users may try slugs with accents — these must be rejected
+            // because the on-disk filename never has them.
+            assert_rejected("olá");
+            assert_rejected("café");
+        }
+
+        #[test]
+        fn rejects_special_chars() {
+            assert_rejected("foo bar"); // space
+            assert_rejected("foo.bar"); // dot
+            assert_rejected("foo_bar"); // underscore
+            assert_rejected("foo!bar");
+            assert_rejected("foo?bar");
+            assert_rejected("foo%2fbar"); // url-encoded slash
+            assert_rejected("foo<script>");
+        }
+
+        #[test]
+        fn rejects_too_long() {
+            // MAX_LEN is 64 bytes — exactly 64 'a's is allowed, 65 is not.
+            let max = "a".repeat(64);
+            assert!(Slug::try_from(max).is_ok());
+
+            let over = "a".repeat(65);
+            assert_rejected(&over);
+        }
+    }
+
+    mod frontmatter {
+        use super::*;
+
+        const VALID: &str = "---\n\
+title: \"Olá\"\n\
+date: 2026-04-01\n\
+summary: \"Resumo\"\n\
+---\n\
+# Conteúdo\n";
+
+        #[test]
+        fn parses_valid_frontmatter_and_returns_body() {
+            let (fm, body) = split_frontmatter("post", VALID).unwrap();
+            assert_eq!(fm.title, "Olá");
+            assert_eq!(fm.date, NaiveDate::from_ymd_opt(2026, 4, 1).unwrap());
+            assert_eq!(fm.summary, "Resumo");
+            // `trim_start_matches('\n')` should strip the newline that follows
+            // the closing fence so callers can hand the body straight to the
+            // markdown parser.
+            assert!(body.starts_with("# Conteúdo"));
+        }
+
+        #[test]
+        fn missing_opening_fence_returns_bad_post_with_slug() {
+            let raw = "title: foo\ndate: 2026-04-01\nsummary: x\n";
+            match split_frontmatter("my-slug", raw) {
+                Err(AppError::BadPost { slug, reason }) => {
+                    assert_eq!(slug, "my-slug");
+                    assert!(reason.contains("opening"), "reason was: {reason}");
+                }
+                Ok(_) => panic!("expected BadPost, got Ok"),
+                Err(other) => panic!("expected BadPost, got {other:?}"),
+            }
+        }
+
+        #[test]
+        fn missing_closing_fence_returns_bad_post() {
+            let raw = "---\ntitle: foo\ndate: 2026-04-01\nsummary: x\n";
+            match split_frontmatter("my-slug", raw) {
+                Err(AppError::BadPost { slug, reason }) => {
+                    assert_eq!(slug, "my-slug");
+                    assert!(reason.contains("closing"), "reason was: {reason}");
+                }
+                Ok(_) => panic!("expected BadPost, got Ok"),
+                Err(other) => panic!("expected BadPost, got {other:?}"),
+            }
+        }
+
+        #[test]
+        fn invalid_yaml_returns_bad_post_tagged_yml() {
+            // `date` is not a date — yaml will deserialize but serde will
+            // reject it on the typed struct.
+            let raw = "---\ntitle: foo\ndate: not-a-date\nsummary: x\n---\n";
+            match split_frontmatter("my-slug", raw) {
+                Err(AppError::BadPost { slug, reason }) => {
+                    assert_eq!(slug, "my-slug");
+                    assert!(reason.starts_with("yml:"), "reason was: {reason}");
+                }
+                Ok(_) => panic!("expected BadPost, got Ok"),
+                Err(other) => panic!("expected BadPost, got {other:?}"),
+            }
+        }
+
+        #[test]
+        fn missing_required_field_returns_bad_post() {
+            // No `summary` — deserialize must fail.
+            let raw = "---\ntitle: foo\ndate: 2026-04-01\n---\n";
+            match split_frontmatter("p", raw) {
+                Err(AppError::BadPost { reason, .. }) => {
+                    assert!(reason.starts_with("yml:"), "reason was: {reason}");
+                }
+                Ok(_) => panic!("expected BadPost, got Ok"),
+                Err(other) => panic!("expected BadPost, got {other:?}"),
+            }
+        }
+    }
+
+    mod parse_post {
+        use super::*;
+
+        fn raw(body: &str) -> String {
+            format!("---\ntitle: \"T\"\ndate: 2026-04-01\nsummary: \"S\"\n---\n{body}")
+        }
+
+        #[test]
+        fn returns_post_with_frontmatter_fields() {
+            let post = super::super::parse_post("hello", &raw("hi")).unwrap();
+            assert_eq!(post.slug, "hello");
+            assert_eq!(post.title, "T");
+            assert_eq!(post.summary, "S");
+            assert_eq!(post.date, NaiveDate::from_ymd_opt(2026, 4, 1).unwrap());
+        }
+
+        #[test]
+        fn strips_script_tags() {
+            let post = super::super::parse_post("p", &raw("<script>alert(1)</script>")).unwrap();
+            assert!(
+                !post.content_html.contains("<script"),
+                "ammonia must strip <script>, body was: {}",
+                post.content_html
+            );
+            assert!(!post.content_html.contains("alert(1)"));
+        }
+
+        #[test]
+        fn strips_iframe_tags() {
+            let post = super::super::parse_post("p", &raw("<iframe src=\"http://evil\"></iframe>"))
+                .unwrap();
+            assert!(!post.content_html.contains("<iframe"));
+        }
+
+        #[test]
+        fn strips_javascript_urls() {
+            let post = super::super::parse_post("p", &raw("[click](javascript:alert(1))")).unwrap();
+            // ammonia rewrites or removes the href; either way the protocol
+            // string must not survive into the rendered HTML.
+            assert!(
+                !post.content_html.to_lowercase().contains("javascript:"),
+                "javascript: URL leaked into output: {}",
+                post.content_html
+            );
+        }
+
+        #[test]
+        fn preserves_syntect_span_classes() {
+            // syntect emits <span class="sy-…"> for highlighted tokens.
+            // The sanitizer's allowlist must let these through, otherwise
+            // syntax highlighting silently breaks for all posts.
+            let post = super::super::parse_post("p", &raw("```rust\nfn main() {}\n```\n")).unwrap();
+            assert!(
+                post.content_html.contains("class=\"sy-"),
+                "syntect span classes were stripped: {}",
+                post.content_html
+            );
+        }
+
+        #[test]
+        fn preserves_code_block_language_class() {
+            let post = super::super::parse_post("p", &raw("```rust\nfn main() {}\n```\n")).unwrap();
+            assert!(
+                post.content_html
+                    .contains("class=\"highlight language-rust\""),
+                "language class was stripped: {}",
+                post.content_html
+            );
+        }
+
+        #[test]
+        fn preserves_paragraphs_and_headings() {
+            let post = super::super::parse_post("p", &raw("# Título\n\nUm parágrafo.\n")).unwrap();
+            assert!(post.content_html.contains("<h1>Título</h1>"));
+            assert!(post.content_html.contains("<p>Um parágrafo.</p>"));
+        }
+    }
+
+    mod highlight {
+        use super::*;
+
+        #[test]
+        fn allows_alphanumeric_lang() {
+            let html = highlight_code("x", Some("rust"));
+            assert!(html.contains("language-rust"));
+        }
+
+        #[test]
+        fn allows_lang_with_plus_and_hyphen() {
+            // Real syntect tokens like "c++" and "objective-c" must not be
+            // collapsed to "text".
+            assert!(highlight_code("x", Some("c++")).contains("language-c++"));
+            assert!(highlight_code("x", Some("objective-c")).contains("language-objective-c"));
+        }
+
+        #[test]
+        fn allows_lang_with_underscore() {
+            assert!(highlight_code("x", Some("c_sharp")).contains("language-c_sharp"));
+        }
+
+        #[test]
+        fn collapses_to_text_when_lang_is_none() {
+            assert!(highlight_code("x", None).contains("language-text"));
+        }
+
+        #[test]
+        fn collapses_to_text_when_lang_has_quote() {
+            // Attempt to break out of the class attribute.
+            let payload = "rust\" onerror=\"alert(1)";
+            let html = highlight_code("x", Some(payload));
+            assert!(
+                html.contains("language-text"),
+                "lang with quote must collapse to text, got: {html}"
+            );
+            assert!(!html.contains("onerror"));
+        }
+
+        #[test]
+        fn collapses_to_text_when_lang_has_angle_brackets() {
+            let html = highlight_code("x", Some("<script>"));
+            assert!(html.contains("language-text"));
+            assert!(!html.contains("<script"));
+        }
+
+        #[test]
+        fn collapses_to_text_when_lang_has_space() {
+            // Space is not in the allowlist; would otherwise let attacker
+            // inject a second attribute.
+            let html = highlight_code("x", Some("rust autofocus"));
+            assert!(html.contains("language-text"));
+            assert!(!html.contains("autofocus"));
+        }
+    }
+
+    mod store {
+        use super::*;
+        use std::fs;
+        use tempfile::TempDir;
+
+        fn write_post(dir: &TempDir, slug: &str, date: &str, title: &str) {
+            let body =
+                format!("---\ntitle: \"{title}\"\ndate: {date}\nsummary: \"s\"\n---\n# {title}\n");
+            fs::write(dir.path().join(format!("{slug}.md")), body).unwrap();
+        }
+
+        #[test]
+        fn loads_valid_posts_into_all_and_by_slug() {
+            let dir = TempDir::new().unwrap();
+            write_post(&dir, "a", "2026-01-01", "A");
+            write_post(&dir, "b", "2026-02-01", "B");
+
+            let store = BlogStore::load(dir.path().to_str().unwrap()).unwrap();
+
+            assert_eq!(store.all.len(), 2);
+            assert!(store.by_slug.contains_key("a"));
+            assert!(store.by_slug.contains_key("b"));
+            assert_eq!(store.by_slug.get("a").unwrap().title, "A");
+        }
+
+        #[test]
+        fn sorts_posts_by_date_descending() {
+            let dir = TempDir::new().unwrap();
+            write_post(&dir, "old", "2025-01-01", "Old");
+            write_post(&dir, "new", "2026-04-01", "New");
+            write_post(&dir, "mid", "2026-01-15", "Mid");
+
+            let store = BlogStore::load(dir.path().to_str().unwrap()).unwrap();
+
+            let titles: Vec<&str> = store.all.iter().map(|p| p.title.as_str()).collect();
+            assert_eq!(
+                titles,
+                vec!["New", "Mid", "Old"],
+                "posts must be sorted by date desc — newest first"
+            );
+        }
+
+        #[test]
+        fn skips_non_markdown_files() {
+            let dir = TempDir::new().unwrap();
+            write_post(&dir, "real", "2026-04-01", "Real");
+            fs::write(dir.path().join("README.txt"), "not a post").unwrap();
+            fs::write(dir.path().join("draft.markdown"), "wrong ext").unwrap();
+            fs::write(dir.path().join("noext"), "no extension").unwrap();
+
+            let store = BlogStore::load(dir.path().to_str().unwrap()).unwrap();
+
+            assert_eq!(store.all.len(), 1);
+            assert_eq!(store.all[0].slug, "real");
+        }
+
+        #[test]
+        fn skips_broken_posts_without_failing_index() {
+            // The documented invariant at blog.rs (load_all_posts comment):
+            // "One bad post must not 500 the whole index — log and move on."
+            let dir = TempDir::new().unwrap();
+            write_post(&dir, "good", "2026-04-01", "Good");
+            fs::write(dir.path().join("broken.md"), "no frontmatter here").unwrap();
+            fs::write(
+                dir.path().join("bad-yaml.md"),
+                "---\ntitle: foo\ndate: not-a-date\nsummary: s\n---\n",
+            )
+            .unwrap();
+
+            let store = BlogStore::load(dir.path().to_str().unwrap()).unwrap();
+
+            assert_eq!(store.all.len(), 1);
+            assert_eq!(store.all[0].slug, "good");
+            assert!(!store.by_slug.contains_key("broken"));
+            assert!(!store.by_slug.contains_key("bad-yaml"));
+        }
+
+        #[test]
+        fn missing_directory_returns_internal_error() {
+            let result = BlogStore::load("/nonexistent/path/that/should/never/exist/here");
+            match result {
+                Err(AppError::Internal(msg)) => {
+                    assert!(
+                        msg.contains("content dir unreadable"),
+                        "expected diagnostic mentioning content dir, got: {msg}"
+                    );
+                }
+                other => panic!(
+                    "expected AppError::Internal for missing dir, got {other:?}",
+                    other = match other {
+                        Ok(_) => "Ok".to_string(),
+                        Err(e) => format!("{e:?}"),
+                    }
+                ),
+            }
+        }
+
+        #[test]
+        fn empty_directory_yields_empty_store() {
+            let dir = TempDir::new().unwrap();
+            let store = BlogStore::load(dir.path().to_str().unwrap()).unwrap();
+            assert!(store.all.is_empty());
+            assert!(store.by_slug.is_empty());
+        }
+
+        #[test]
+        fn all_and_by_slug_share_the_same_arc() {
+            // Memory-efficiency invariant: each post is stored once, behind
+            // an Arc, with both views aliasing the same allocation.
+            let dir = TempDir::new().unwrap();
+            write_post(&dir, "only", "2026-04-01", "Only");
+
+            let store = BlogStore::load(dir.path().to_str().unwrap()).unwrap();
+            let from_all = &store.all[0];
+            let from_map = store.by_slug.get("only").unwrap();
+            assert!(Arc::ptr_eq(from_all, from_map));
+        }
+    }
+}
