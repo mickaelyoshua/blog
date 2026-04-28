@@ -16,20 +16,22 @@ use tracing_subscriber::{EnvFilter, fmt};
 
 #[tokio::main]
 async fn main() {
+    let env = Env::from_env();
+
     fmt()
         .with_env_filter(
             EnvFilter::try_from_default_env()
                 .unwrap_or_else(|_| EnvFilter::new("info,blog=debug,tower_http=debug")),
         )
+        .with_ansi(env == Env::Development)
         .init();
+
+    info!(?env, "Detected environment");
 
     let port: u16 = std::env::var("PORT")
         .ok()
         .and_then(|s| s.parse().ok())
         .unwrap_or(3000);
-
-    let env = Env::from_env();
-    info!(?env, "Detected environment");
 
     let state = AppState::new("content/posts").expect("Error on reading content directory.");
 
