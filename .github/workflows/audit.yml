@@ -25,3 +25,8 @@ jobs:
       - uses: rustsec/audit-check@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          # RUSTSEC-2025-0141: bincode 1.x flagged unmaintained. Pulled in
+          # transitively by syntect for its precompiled syntax dumps. Not a
+          # vulnerability — drop this ignore once syntect publishes a release
+          # on bincode 2.x.
+          ignore: RUSTSEC-2025-0141
