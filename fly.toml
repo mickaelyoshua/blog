@@ -1,0 +1,37 @@
+# Fly.io app configuration. See https://fly.io/docs/reference/configuration/
+#
+# Build is driven by the repo's Dockerfile (no [build] section needed).
+# Runtime env (PORT=3000, APP_ENV=production) is baked into the image; the
+# [env] block here is only for non-secret overrides we want visible in
+# `fly config show`.
+
+app = "yoshua"
+primary_region = "gru"
+
+[env]
+  RUST_LOG = "info,blog=info,tower_http=info"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+  # Liveness probe — Fly's edge waits this long after a request before giving
+  # up on a cold-start machine, so don't set the timeout too low.
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "15s"
+    method = "GET"
+    timeout = "5s"
+    path = "/healthz"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 256
+
+[deploy]
+  strategy = "rolling"

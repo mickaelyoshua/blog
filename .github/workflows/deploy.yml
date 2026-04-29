@@ -1,0 +1,36 @@
+name: deploy
+
+# Trigger only after the `ci` workflow finishes on master. Filtering by
+# conclusion below ensures we never deploy a red build.
+on:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+    branches: [master]
+
+# Never cancel an in-flight deploy — that can leave the app mid-rolling-update.
+# Queue instead.
+concurrency:
+  group: deploy-fly
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      # `workflow_run` fires on the default branch by default; pin checkout to
+      # the exact SHA that CI just validated so we don't deploy a different
+      # commit by accident.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      # `--remote-only` builds on Fly's remote builder (no Docker on the
+      # runner, faster cold starts, persistent build cache).
+      - name: Deploy to Fly.io
+        run: flyctl deploy --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
