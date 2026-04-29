@@ -12,11 +12,14 @@ RUN cargo build --release
 FROM debian:bookworm-slim
 RUN apt-get update \
 	&& apt-get install -y --no-install-recommends ca-certificates \
-	&& rm -rf /var/lib/apt/lists/*
+	&& rm -rf /var/lib/apt/lists/* \
+	&& groupadd --system blog \
+	&& useradd --system --gid blog --home-dir /app --shell /usr/sbin/nologin blog
 WORKDIR /app
-COPY --from=builder /app/target/release/blog /usr/local/bin/blog
-COPY --from=builder /app/static ./static
-COPY --from=builder /app/content ./content
+COPY --from=builder --chown=blog:blog /app/target/release/blog /usr/local/bin/blog
+COPY --from=builder --chown=blog:blog /app/static ./static
+COPY --from=builder --chown=blog:blog /app/content ./content
 ENV PORT=3000 APP_ENV=production
+USER blog:blog
 EXPOSE 3000
 CMD [ "/usr/local/bin/blog" ]
