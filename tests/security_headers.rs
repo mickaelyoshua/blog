@@ -86,9 +86,38 @@ async fn always_sets_strict_csp() {
         "CSP allows unsafe-eval: {csp}"
     );
     assert!(csp.contains("default-src 'self'"));
+    // No JavaScript ships with the app — script-src must be 'none'. Loosening
+    // this back to 'self' is a deliberate decision (e.g. HTMX) and should
+    // require updating this test alongside.
+    assert!(
+        csp.contains("script-src 'none'"),
+        "script-src is not locked down: {csp}"
+    );
     assert!(csp.contains("frame-ancestors 'none'"));
     assert!(csp.contains("object-src 'none'"));
     assert!(csp.contains("base-uri 'self'"));
+}
+
+#[tokio::test]
+async fn always_sets_cross_origin_isolation_headers() {
+    // Defense-in-depth on top of frame-ancestors / X-Frame-Options: COOP
+    // breaks window.opener references from cross-origin pages, CORP blocks
+    // cross-origin <embed>/<object>/<img> usage of our resources.
+    for env in [Env::Development, Env::Production] {
+        let h = fetch_headers(env).await;
+        assert_eq!(
+            h.get("cross-origin-opener-policy")
+                .and_then(|v| v.to_str().ok()),
+            Some("same-origin"),
+            "COOP missing in {env:?}"
+        );
+        assert_eq!(
+            h.get("cross-origin-resource-policy")
+                .and_then(|v| v.to_str().ok()),
+            Some("same-origin"),
+            "CORP missing in {env:?}"
+        );
+    }
 }
 
 #[tokio::test]
@@ -128,4 +157,8 @@ async fn hsts_only_set_in_production() {
         hsts.contains("includeSubDomains"),
         "HSTS missing includeSubDomains: {hsts}"
     );
+    // `preload` is required so the domain qualifies for the Chrome HSTS
+    // preload list. Removing it is a deliberate decision (withdrawing from
+    // the preload list) — update this test if you do that.
+    assert!(hsts.contains("preload"), "HSTS missing preload: {hsts}");
 }
