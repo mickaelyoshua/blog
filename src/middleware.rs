@@ -24,11 +24,12 @@ const CSP: &str = concat!(
 
 const PERMISSIONS_POLICY: &str = "camera=(), microphone=(), geolocation=(), interest-cohort=()";
 
-// `preload` is included so the domain can be submitted to the Chrome HSTS
-// preload list once TLS is verified across all subdomains. Removing it is a
-// one-year browser-side commitment, so flip back only if you intend to
-// withdraw from the preload list.
-const HSTS: &str = "max-age=31536000; includeSubDomains; preload";
+// `preload` is intentionally omitted: yoshua.fly.dev is on a domain we don't
+// own (Fly's apex), so submission to the HSTS preload list isn't possible.
+// Once we cut over to a custom domain we can opt in by adding `preload` and
+// submitting at hstspreload.org — but that's a multi-month one-way commitment
+// across all subdomains, so don't add it speculatively.
+const HSTS: &str = "max-age=31536000; includeSubDomains";
 
 pub async fn security_headers(State(env): State<Env>, req: Request, next: Next) -> Response {
     let mut response = next.run(req).await;

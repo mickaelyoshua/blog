@@ -157,8 +157,12 @@ async fn hsts_only_set_in_production() {
         hsts.contains("includeSubDomains"),
         "HSTS missing includeSubDomains: {hsts}"
     );
-    // `preload` is required so the domain qualifies for the Chrome HSTS
-    // preload list. Removing it is a deliberate decision (withdrawing from
-    // the preload list) — update this test if you do that.
-    assert!(hsts.contains("preload"), "HSTS missing preload: {hsts}");
+    // `preload` is intentionally absent: we cannot submit yoshua.fly.dev to
+    // the preload list (Fly owns the apex), and adding it speculatively is a
+    // multi-month one-way commitment. Re-enable when on a custom domain and
+    // ready to submit at hstspreload.org.
+    assert!(
+        !hsts.contains("preload"),
+        "HSTS unexpectedly contains preload: {hsts}"
+    );
 }
