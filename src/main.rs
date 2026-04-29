@@ -41,17 +41,19 @@ async fn main() {
         .route("/blog/{slug}", get(blog_post))
         .route("/cv", get(resume))
         .route("/healthz", get(healthz))
+        .layer(TraceLayer::new_for_http())
+        .with_state(state);
+
+    // /static is mounted outside TraceLayer so per-asset requests don't
+    // generate spans (would drown out request traces). TimeoutLayer is applied
+    // to the outer router so static responses are also bounded — without it a
+    // slow client streaming /static/* could hold a connection indefinitely.
+    let router = app
+        .nest_service("/static", ServeDir::new("static"))
         .layer(TimeoutLayer::with_status_code(
             StatusCode::REQUEST_TIMEOUT,
             Duration::from_secs(10),
         ))
-        .layer(TraceLayer::new_for_http())
-        .with_state(state);
-
-    // /static and the security-headers layer are mounted outside TraceLayer so
-    // per-asset requests don't generate spans (would drown out request traces).
-    let router = app
-        .nest_service("/static", ServeDir::new("static"))
         .layer(CompressionLayer::new())
         .layer(from_fn_with_state(env, security_headers));
 
