@@ -22,7 +22,7 @@ jobs:
       # `workflow_run` fires on the default branch by default; pin checkout to
       # the exact SHA that CI just validated so we don't deploy a different
       # commit by accident.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
 
