@@ -1,3 +1,5 @@
+use tracing::warn;
+
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Env {
     Development,
@@ -9,10 +11,24 @@ impl Env {
     // empty, or typos like "prod" — maps to Development. This is fail-safe for
     // local dev but means a misconfigured prod deploy will silently disable
     // production-only behaviors (e.g. HSTS in security_headers).
+    //
+    // To catch the misconfiguration case, emit a loud warning when APP_ENV is
+    // set to something we don't recognize. Unset stays silent (the dev
+    // default) but a typo like APP_ENV=Production or APP_ENV=prod is logged
+    // so an operator can spot it in startup logs.
     pub fn from_env() -> Self {
-        match std::env::var("APP_ENV").as_deref() {
-            Ok("production") => Self::Production,
-            _ => Self::Development,
+        match std::env::var("APP_ENV") {
+            Ok(v) if v == "production" => Self::Production,
+            Ok(v) => {
+                warn!(
+                    value = %v,
+                    "APP_ENV is set but does not match \"production\" exactly; \
+                     defaulting to Development. Production-only hardening (HSTS) \
+                     will NOT be enabled."
+                );
+                Self::Development
+            }
+            Err(_) => Self::Development,
         }
     }
 }
