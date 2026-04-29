@@ -1,0 +1,27 @@
+name: audit
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".github/workflows/audit.yml"
+  pull_request:
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".github/workflows/audit.yml"
+  schedule:
+    # Weekly Monday 06:00 UTC — catches advisories filed against pinned deps
+    # even when no PR touches Cargo.lock.
+    - cron: "0 6 * * 1"
+
+jobs:
+  cargo-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: rustsec/audit-check@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
