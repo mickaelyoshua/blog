@@ -65,12 +65,9 @@ Requires a pure Chromium-based browser (`chromium`, `google-chrome-stable`, or `
 
 ## Deployment
 
-The app compiles to a single static binary. Hosting options under consideration:
+Live at **https://yoshua.fly.dev** — Fly.io machine in `gru` (São Paulo), auto-stop when idle.
 
-- **Fly.io** — managed, one-command deploy, ~$4-5/month
-- **Render** — free tier available (with cold starts), $7/month always-on
-- **Hetzner Cloud** — self-managed VPS, ~€3.79/month
-- **Railway** — git-push deploys, $5/month hobby plan
+Push-to-deploy via GitHub Actions: `master` → `ci.yml` (fmt + clippy + test + build) → `deploy.yml` (`flyctl deploy --remote-only`). See `fly.toml` and `.github/workflows/`.
 
 ## License
 

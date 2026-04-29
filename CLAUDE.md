@@ -98,6 +98,12 @@ cargo fmt                    # Format
 - HTML `lang="pt-BR"` in base template
 - Date formatting follows Brazilian convention: `20 de março de 2026`
 
+## Deployment
+
+Live at **https://yoshua.fly.dev** (Fly.io, region `gru`).
+
+**Pushing to `master` deploys to production.** GitHub Actions runs `ci.yml` first; on success, `deploy.yml` runs `flyctl deploy --remote-only`. Config is in `fly.toml` and `.github/workflows/{ci,deploy,audit}.yml`.
+
 ### URL Design (Resource-Oriented)
 
 ```
