@@ -1,6 +1,6 @@
-# AGENTS.md — Personal Blog & Resume
+# CLAUDE.md — Personal Blog & Resume
 
-Developer guide for Antigravity when working on this repository.
+Developer guide for Claude Code when working on this repository.
 
 ## Stack & Architecture
 
